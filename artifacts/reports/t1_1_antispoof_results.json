@@ -1,0 +1,80 @@
+{
+  "task": "T1.1",
+  "title": "Anti-spoof model smoke test",
+  "date": "2026-04-21",
+  "runtime": "Colab T4 (GPU)",
+  "status": "PASSED",
+
+  "model": {
+    "primary": "mo-thecreator/Deepfake-audio-detection",
+    "architecture": "wav2vec2",
+    "params_M": 94.6,
+    "size_fp32_MB": 378,
+    "size_fp16_MB": 189,
+    "id2label": {"0": "fake", "1": "real"},
+    "failed_candidate": {
+      "model_id": "MelodyMachine/Deepfake-audio-detection-V2",
+      "failure": "outputs p(synth)≈0.0 for all clips regardless of input"
+    }
+  },
+
+  "corpus": {
+    "real": {
+      "source": "openslr/librispeech_asr test-clean (streaming)",
+      "n_clips": 10
+    },
+    "synthetic": {
+      "source": "microsoft/speecht5_tts + speecht5_hifigan, cmu-arctic speaker embedding",
+      "n_clips": 10,
+      "scripts": [
+        "Hello, this is an automated message from your bank.",
+        "We detected unusual activity on your account. Please confirm your identity.",
+        "Your package delivery has been rescheduled. Press one to continue.",
+        "This is the IRS. You have an outstanding tax balance.",
+        "Your computer has been compromised. Do not turn it off.",
+        "Congratulations, you have won a five hundred dollar gift card.",
+        "This is your car warranty specialist calling.",
+        "Please verify the last four digits of your social security number.",
+        "Your subscription will renew automatically tomorrow.",
+        "Press one to speak with a representative about your loan."
+      ]
+    }
+  },
+
+  "results": {
+    "real_p_synthetic":  [0.0000, 0.0000, 0.0000, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000],
+    "synth_p_synthetic": [0.9877, 0.0000, 0.9959, 0.0143, 0.7343, 0.0000, 0.9987, 0.9850, 0.9999, 1.0000],
+    "mean_real": 0.0000,
+    "mean_synth": 0.6716,
+    "threshold_0_5": {
+      "real_below": "10/10",
+      "synth_above": "7/10"
+    },
+    "synth_misses": {
+      "count": 3,
+      "indices": [1, 3, 5],
+      "scripts": [
+        "We detected unusual activity on your account. Please confirm your identity.",
+        "This is the IRS. You have an outstanding tax balance.",
+        "Congratulations, you have won a five hundred dollar gift card."
+      ],
+      "hypothesis": "Short/simple phrases produce less acoustic artifact; likely short-audio boundary effect in wav2vec2 feature extraction"
+    }
+  },
+
+  "acceptance": {
+    "model_loads_prints_id2label": true,
+    "params_under_200MB_fp16": true,
+    "p_synthetic_in_0_1": true,
+    "histograms_visibly_separated": true
+  },
+
+  "plot": "artifacts/plots/t1_1_antispoof_histogram.png",
+  "notebook": "notebooks/01_spike_antiSpoof.ipynb",
+
+  "notes": [
+    "fp32 size (378 MB) exceeds the 200 MB spec; fp16 on T4 is ~189 MB which passes.",
+    "3 synth misses are a known limitation — document in Limitations slide.",
+    "MelodyMachine/Deepfake-audio-detection-V2 always predicts real; do not use."
+  ]
+}

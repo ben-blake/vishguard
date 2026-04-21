@@ -1,0 +1,142 @@
+{
+  "task": "T1.2",
+  "title": "Open-LLM structured-output spike",
+  "date": "2026-04-21",
+  "runtime": "Colab T4 (GPU)",
+  "status": "PASSED",
+
+  "model": {
+    "id": "Qwen/Qwen2.5-3B-Instruct",
+    "dtype": "float16",
+    "device": "cuda:0",
+    "generation": {
+      "max_new_tokens": 400,
+      "do_sample": false
+    }
+  },
+
+  "prompt_version": "v1 (bare — single few-shot example)",
+
+  "scores": {
+    "valid_json": "10/10",
+    "labels_all_in_taxonomy": "10/10",
+    "acceptance_bar": "parse_ok >= 9 AND label_ok >= 9",
+    "passed": true
+  },
+
+  "per_script": [
+    {
+      "tag": "authority+fear",
+      "script": "This is Agent Miller with the DEA. We have a warrant for your arrest. You need to verify your identity right now or we will dispatch officers.",
+      "expected_labels": ["authority", "fear_intimidation"],
+      "got_labels": ["authority", "pretexting", "urgency"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Missed fear_intimidation; pretexting and urgency are plausible co-occurrences but core label missed"
+    },
+    {
+      "tag": "tech_support",
+      "script": "Hello, this is Microsoft support. We detected a virus on your computer. Please go to the start menu and let me guide you through removal.",
+      "expected_labels": ["tech_support"],
+      "got_labels": ["tech_support", "benign"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "benign is a false positive alongside a malicious label"
+    },
+    {
+      "tag": "credential_harvesting",
+      "script": "This is your bank. To continue, please read me the security code we just texted to your phone.",
+      "expected_labels": ["credential_harvesting"],
+      "got_labels": ["pretexting"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Missed credential_harvesting entirely; model treated OTP request as pretexting"
+    },
+    {
+      "tag": "reward_prize",
+      "script": "Congratulations! You are the lucky winner of a one thousand dollar Walmart gift card. Press 1 now to claim before it expires.",
+      "expected_labels": ["reward_prize"],
+      "got_labels": ["pretexting", "reward_prize", "benign"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "reward_prize detected correctly; pretexting and benign are noise"
+    },
+    {
+      "tag": "impersonation+urgency",
+      "script": "Grandpa, it is me. I am in jail and need bail money right away. Please do not tell mom.",
+      "expected_labels": ["impersonation", "urgency"],
+      "got_labels": ["impersonation", "urgency"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Correct"
+    },
+    {
+      "tag": "pretexting",
+      "script": "I am calling on behalf of the HR benefits department. We are updating records and need to confirm your social security number.",
+      "expected_labels": ["pretexting", "credential_harvesting"],
+      "got_labels": ["pretexting"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "pretexting correct; credential_harvesting missed (SSN request)"
+    },
+    {
+      "tag": "financial_manipulation",
+      "script": "Your Amazon order for 799 dollars is being processed. If this was not you, please stay on the line to reverse the charge with a refund.",
+      "expected_labels": ["financial_manipulation"],
+      "got_labels": ["pretexting", "urgency", "benign"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Missed financial_manipulation entirely; benign false positive"
+    },
+    {
+      "tag": "benign",
+      "script": "Hey, it is Mike. Just calling to confirm dinner on Friday at seven. Let me know if that still works for you.",
+      "expected_labels": ["benign"],
+      "got_labels": [],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Empty array for benign is acceptable — no attack tactics present; benign label absent but not harmful"
+    },
+    {
+      "tag": "fear_intimidation+authority",
+      "script": "This is the Social Security Administration. Your number has been suspended due to suspicious activity in Texas.",
+      "expected_labels": ["fear_intimidation", "authority"],
+      "got_labels": ["authority", "pretexting"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "authority correct; fear_intimidation missed; pretexting is noise"
+    },
+    {
+      "tag": "urgency+financial_manipulation",
+      "script": "Your utility bill is overdue and service will be disconnected in thirty minutes. Pay by card now to avoid disconnection.",
+      "expected_labels": ["urgency", "financial_manipulation"],
+      "got_labels": ["urgency", "pretexting", "financial_manipulation"],
+      "parse_ok": true,
+      "taxonomy_ok": true,
+      "semantic_notes": "Both primary labels correct; pretexting is minor noise"
+    }
+  ],
+
+  "semantic_patterns": {
+    "pretexting_overuse": "Used as catch-all in 7/10 scripts including cases where it doesn't apply",
+    "credential_harvesting_recall": "Detected 0/2 times it was clearly present",
+    "fear_intimidation_recall": "Detected 0/2 times it was clearly present",
+    "benign_false_positive_rate": "Added alongside malicious labels in 3/10 scripts",
+    "benign_on_benign_script": "Returned empty array rather than benign label — acceptable but worth noting"
+  },
+
+  "prompt_v2_remediation": {
+    "pretexting": "Add explicit note: do NOT use as catch-all; almost always co-occurs with another tactic",
+    "credential_harvesting": "Add targeted few-shot example showing OTP/verification-code request",
+    "fear_intimidation": "Add disambiguation vs urgency: fear = explicit threat; urgency = time pressure only",
+    "benign": "Add rule: use benign ONLY when NO attack tactics are present; never alongside malicious labels"
+  },
+
+  "notebook": "notebooks/02_spike_llmJson.ipynb",
+
+  "notes": [
+    "generation flags warning (temperature/top_p/top_k) is cosmetic — do_sample=False ignores them.",
+    "evidenceSpans spot-check (verbatim substrings) not captured in this run — manual review needed.",
+    "No need to escalate to Qwen 7B or constrained decoding; 3B passes the reliability bar."
+  ]
+}
