@@ -180,6 +180,74 @@ def tacticPromptV3(transcript: str) -> list[dict]:
     ]
 
 
+_FEW_SHOT_V4_EXTRA = (
+    "Example 6 — impersonation + pretexting + credential_harvesting (all three at once):\n"
+    "Transcript: \"This is the security team at PayPal. We have detected a login "
+    "from an unrecognized device in another country. To protect your account I will "
+    "need you to confirm your email address, your current password, and the six-digit "
+    "code we just sent to your phone.\"\n"
+    "JSON: [{\"label\": \"impersonation\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"security team at PayPal\"]}, "
+    "{\"label\": \"pretexting\", \"confidence\": 0.9, "
+    "\"evidenceSpans\": [\"login from an unrecognized device in another country\"]}, "
+    "{\"label\": \"credential_harvesting\", \"confidence\": 0.98, "
+    "\"evidenceSpans\": [\"confirm your email address, your current password\", "
+    "\"six-digit code we just sent\"]}]\n\n"
+    "Example 7 — reward_prize + financial_manipulation + credential_harvesting:\n"
+    "Transcript: \"Congratulations! You have been selected as the winner of our "
+    "$10,000 national sweepstakes. To release your prize we just need a $199 "
+    "processing fee paid by gift card, plus your bank account number so we can "
+    "wire the winnings directly to you.\"\n"
+    "JSON: [{\"label\": \"reward_prize\", \"confidence\": 0.98, "
+    "\"evidenceSpans\": [\"winner of our $10,000 national sweepstakes\"]}, "
+    "{\"label\": \"financial_manipulation\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"$199 processing fee paid by gift card\"]}, "
+    "{\"label\": \"credential_harvesting\", \"confidence\": 0.9, "
+    "\"evidenceSpans\": [\"your bank account number\"]}]\n\n"
+    "Example 8 — authority + impersonation + fear_intimidation + financial_manipulation:\n"
+    "Transcript: \"This is Agent Collins from the Social Security Administration. "
+    "Your SSN has been linked to a money laundering investigation. To avoid "
+    "immediate asset seizure you must transfer your savings to a secure government "
+    "escrow account within the hour.\"\n"
+    "JSON: [{\"label\": \"authority\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"Social Security Administration\"]}, "
+    "{\"label\": \"impersonation\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"Agent Collins from the Social Security Administration\"]}, "
+    "{\"label\": \"fear_intimidation\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"linked to a money laundering investigation\", "
+    "\"immediate asset seizure\"]}, "
+    "{\"label\": \"financial_manipulation\", \"confidence\": 0.9, "
+    "\"evidenceSpans\": [\"transfer your savings to a secure government escrow account\"]}]\n\n"
+    "Example 9 — pretexting + credential_harvesting + urgency (no impersonation):\n"
+    "Transcript: \"We are running a brief account verification as part of our "
+    "annual security audit. It will only take a moment. Please confirm the last "
+    "four digits of your social security number and your current PIN before "
+    "midnight tonight or your account will be locked for 48 hours.\"\n"
+    "JSON: [{\"label\": \"pretexting\", \"confidence\": 0.9, "
+    "\"evidenceSpans\": [\"annual security audit\"]}, "
+    "{\"label\": \"credential_harvesting\", \"confidence\": 0.95, "
+    "\"evidenceSpans\": [\"last four digits of your social security number\", "
+    "\"current PIN\"]}, "
+    "{\"label\": \"urgency\", \"confidence\": 0.9, "
+    "\"evidenceSpans\": [\"before midnight tonight\"]}, "
+    "{\"label\": \"fear_intimidation\", \"confidence\": 0.85, "
+    "\"evidenceSpans\": [\"account will be locked for 48 hours\"]}]\n"
+)
+
+
+def tacticPromptV4(transcript: str) -> list[dict]:
+    """v4 prompt — v3 system + 9 few-shot examples targeting co-occurrence regressions.
+
+    Adds examples 6-9 to recover credential_harvesting (-0.16) and
+    financial_manipulation (-0.15) regressions seen in v3 vs v2, caused by
+    the model dropping those labels when impersonation/pretexting was also present.
+    """
+    return [
+        {"role": "system", "content": _SYSTEM_V3 + "\n\n" + _FEW_SHOT_V3 + _FEW_SHOT_V4_EXTRA},
+        {"role": "user", "content": f"Transcript:\n{transcript}\n\nJSON:"},
+    ]
+
+
 def riskReasoningPrompt(transcript: str, pSynthetic: float, tacticsJson: str) -> list[dict]:
     """Prompt for LLM-written risk reasoning string inside RiskScore."""
     return [

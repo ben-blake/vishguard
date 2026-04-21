@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import re
 
-from .promptLibrary import tacticPromptV1, tacticPromptV2, tacticPromptV3
+from .promptLibrary import tacticPromptV1, tacticPromptV2, tacticPromptV3, tacticPromptV4
 from .types import TACTIC_TAXONOMY, LlmConfig, Tactic, Transcript
 
 _MODEL_CACHE: dict = {}  # model_id -> (tokenizer, model)
@@ -139,7 +139,9 @@ def _parse_tactics(raw: list) -> tuple[Tactic, ...]:
 
 
 def classifyTactics(transcript: Transcript, cfg: LlmConfig) -> tuple[Tactic, ...]:
-    if cfg.promptVariant == "v3":
+    if cfg.promptVariant == "v4":
+        prompt_fn = tacticPromptV4
+    elif cfg.promptVariant == "v3":
         prompt_fn = tacticPromptV3
     elif cfg.promptVariant == "v2":
         prompt_fn = tacticPromptV2
