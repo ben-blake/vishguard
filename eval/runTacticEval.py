@@ -58,7 +58,7 @@ def _run_eval(corpus_path: Path, out_dir: Path) -> None:
         return Transcript(fullText=text, segments=(seg,), languageCode="en", modelId="eval-corpus")
 
     rows: list[dict] = []
-    for variant in ("v1", "v2"):
+    for variant in ("v1", "v2", "v3"):
         cfg = LlmConfig(promptVariant=variant)
         y_pred: list[set] = []
         for i, ex in enumerate(examples):
