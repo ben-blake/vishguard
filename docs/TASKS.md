@@ -44,27 +44,18 @@ instead of on Day 6.
 - Use normalized WER (strip punctuation) in all Phase 3 eval scripts.
 - See `notebooks/03_spike_whisperWer.ipynb`.
 
-### T1.4 `[P1]` Repo scaffolding — **STATUS: NOT_STARTED**
+### T1.4 `[P1]` Repo scaffolding — **STATUS: DONE**
 
-- `git init`, commit empty `src/vishguard/` package, `tests/`, `eval/`,
-  `notebooks/`, `data/` (gitignored), `configs/`.
-- `requirements.txt` with: `transformers`, `accelerate`, `bitsandbytes`,
-  `torch`, `torchaudio`, `librosa`, `soundfile`, `pydantic`, `streamlit`,
-  `jiwer`, `datasets`, `scikit-learn`, `python-dotenv`.
-- `.gitignore` excludes `data/`, `out/`, `*.wav`, `*.mp3`, `__pycache__`,
-  `.env`, `.venv`.
-- Stub every module listed in `ARCHITECTURE.md §5` with a docstring and
-  a `raise NotImplementedError`.
-- Add `types.py` with the dataclasses from `ARCHITECTURE.md §3.1`.
-- **Acceptance:** `python -c "import vishguard"` succeeds, `pytest tests/`
-  collects zero tests without errors.
+- All modules stubbed with `NotImplementedError`, `types.py` frozen dataclasses,
+  `requirements.txt` / `requirements-gpu.txt`, `pyproject.toml` src-layout,
+  `.gitignore`, `configs/default.yaml`, `artifacts/` folder.
+- `python -c "import vishguard"` passes; `pytest tests/` collects 0 tests cleanly.
+- Code review (2026-04-21): fixed `SpoofConfig` default model ID, added CLI entry point.
 
-### T1.5 `[P1]` Colab setup notebook — **STATUS: NOT_STARTED**
+### T1.5 `[P1]` Colab setup notebook — **STATUS: DONE**
 
-- `notebooks/00_colabSetup.ipynb` with a single self-contained setup cell
-  (Drive mount, repo clone/pull, `sys.path` update, pip install).
-- **Acceptance:** notebook runs top-to-bottom on a fresh Colab runtime
-  without manual edits.
+- `notebooks/00_colabSetup.ipynb` self-contained setup cell verified working on Colab T4.
+- All three spike notebooks (01/02/03) share the same setup cell pattern and ran successfully.
 
 ---
 

@@ -5,9 +5,9 @@ Analyzes a phone-call recording and returns a structured risk report:
 transcript, synthetic-voice likelihood, social-engineering tactic labels,
 aggregate risk score with reasoning, and a spoken briefing via SpeechT5.
 
-See [`docs/`](./docs/) for PRD, architecture, and task plan. Setup and
-reproduction instructions are filled in during Phase 4 (see
-[`docs/TASKS.md`](./docs/TASKS.md) T4.2).
+See [`docs/`](./docs/) for PRD, architecture, and task plan.
+Full reproduction instructions (eval scripts, sample outputs) are added
+during Phase 4 — see [`docs/TASKS.md`](./docs/TASKS.md) T4.2.
 
 ## Local development (macOS, CPU-only)
 

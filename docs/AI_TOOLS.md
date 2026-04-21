@@ -33,19 +33,23 @@ risk-first phase ordering.
 
 ## Phase 1 — Risk-down spikes + scaffolding (2026-04-21)
 
-| Tool               | How used                                                                                                  | Origin         | Where                                                                    |
-|--------------------|-----------------------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------|
-| Claude Code (Opus) | Authored repo scaffolding (T1.4): `pyproject.toml`, `requirements*.txt`, stubbed modules, frozen dataclasses in `types.py`, empty test files, eval stubs, `configs/default.yaml`. | AI-generated   | `src/vishguard/*`, `tests/*`, `eval/*`, `configs/default.yaml`, root cfg |
-| Claude Code (Opus) | Authored Colab setup notebook (T1.5) and 3 Phase-1 spike notebooks (T1.1 anti-spoof, T1.2 Qwen JSON, T1.3 Whisper WER). | AI-generated   | `notebooks/00_colabSetup.ipynb`, `notebooks/01_spike_antiSpoof.ipynb`, `notebooks/02_spike_llmJson.ipynb`, `notebooks/03_spike_whisperWer.ipynb` |
-| Claude Code (Opus) | Aligned `requirements.txt` floors with the Colab 2026-04 runtime (transformers 5.x, torch 2.10, pydantic 2.12) and split `requirements-gpu.txt` for macOS portability. | AI-assisted    | `requirements.txt`, `requirements-gpu.txt`                               |
-| Ben (me)           | Supplied the Colab runtime pip freeze, chose MelodyMachine/Deepfake-audio-detection-V2 as the anti-spoof primary, approved Phase 1 kickoff scope, ran `pip install` in the venv locally. | Human-authored | review + local venv                                                      |
+| Tool | How used | Origin | Where |
+| --- | --- | --- | --- |
+| Claude Code (Opus) | Authored repo scaffolding (T1.4): `pyproject.toml`, `requirements*.txt`, stubbed modules, frozen dataclasses in `types.py`, empty test files, eval stubs, `configs/default.yaml`. | AI-generated | `src/vishguard/*`, `tests/*`, `eval/*`, `configs/` |
+| Claude Code (Opus) | Authored Colab setup notebook (T1.5) and 3 spike notebooks (T1.1 anti-spoof, T1.2 Qwen JSON, T1.3 Whisper WER). | AI-generated | `notebooks/00–03_*.ipynb` |
+| Claude Code (Opus) | Aligned `requirements.txt` floors with Colab 2026-04 runtime and split `requirements-gpu.txt` for macOS portability. | AI-assisted | `requirements.txt`, `requirements-gpu.txt` |
+| Claude Code (Sonnet) | Debugged T1.1 through 5 Colab errors (datasets v4, ZIP extraction, array shape, all-zero scores, wrong model ID). Confirmed `mo-thecreator` as working primary. | AI-assisted | `notebooks/01_spike_antiSpoof.ipynb` |
+| Claude Code (Sonnet) | Ran T1.2, recorded per-script label analysis, implemented `tacticPromptV1` and `tacticPromptV2` with disambiguation notes and targeted few-shot. | AI-assisted | `notebooks/02_spike_llmJson.ipynb`, `src/vishguard/promptLibrary.py` |
+| Claude Code (Sonnet) | Fixed T1.3 `KeyError: num_frames` (transformers 5.x pipeline regression); switched to direct `WhisperProcessor + WhisperForConditionalGeneration`; added punctuation normalization. | AI-assisted | `notebooks/03_spike_whisperWer.ipynb` |
+| Claude Code (Sonnet) | Authored spike result JSON reports, created `artifacts/` folder, applied code-review fixes (SpoofConfig model ID, CLI entry point in pyproject.toml). | AI-generated | `artifacts/reports/*.json`, `src/vishguard/types.py`, `pyproject.toml` |
+| Ben (me) | Supplied Colab pip freeze, identified correct model name `mo-thecreator/Deepfake-audio-detection`, ran all three spike notebooks on Colab T4, supplied all cell outputs, confirmed Python 3.12. | Human-authored | Colab runs + review |
 
 Notes:
 
-- Python venv created with `python3 -m venv .venv` (system Python 3.11.9 via pyenv; Colab runs 3.12.13 — minor gap, no 3.12-only syntax in the codebase).
-- `bitsandbytes` intentionally excluded from `requirements.txt` because it has no macOS build; the Colab setup cell installs `requirements-gpu.txt` when CUDA is available.
-- T1.1 spike completed 2026-04-21: `MelodyMachine/Deepfake-audio-detection-V2` failed smoke test (all scores 0.0). `mo-thecreator/Deepfake-audio-detection` confirmed working — real<0.5=10/10, synth>=0.5=7/10. Primary model updated in ARCHITECTURE.md §2.2.
-- T1.2/T1.3 spike notebooks authored but not yet executed — acceptance to be recorded after first Colab run.
+- Python 3.12 locally and on Colab 2026-04 runtime. `bitsandbytes` excluded from `requirements.txt` (no macOS build); Colab setup cell installs `requirements-gpu.txt` when CUDA is available.
+- All Phase 1 spikes completed 2026-04-21. Results: T1.1 real<0.5=10/10 synth≥0.5=7/10; T1.2 valid_json=10/10; T1.3 clean_norm_WER=0.013 noisy_norm_WER=0.032.
+- `MelodyMachine/Deepfake-audio-detection-V2` failed T1.1 — always predicts real. `mo-thecreator/Deepfake-audio-detection` is the confirmed working primary.
+- transformers 5.x `pipeline('automatic-speech-recognition')` raises `KeyError: num_frames` with dict input on Colab; use `WhisperProcessor` + model directly instead.
 
 ---
 

@@ -38,6 +38,17 @@ All planning lives in [`docs/`](./docs/) and is the authoritative spec:
   it from memory on day 7.
 - Short sessions, `/clear` between phases.
 
+## Phase 1 key decisions (locked — do not revisit)
+
+- **Anti-spoof model:** `mo-thecreator/Deepfake-audio-detection` — confirmed working.
+  `MelodyMachine/Deepfake-audio-detection-V2` always predicts real (p(synth)≈0.0); do not use.
+- **Tactic LLM:** `Qwen/Qwen2.5-3B-Instruct` in fp16 — 10/10 JSON reliability on T4.
+  Prompt v2 (disambiguation + few-shot) is in `promptLibrary.py`; use it by default.
+- **ASR:** `openai/whisper-small` via `WhisperProcessor` + `WhisperForConditionalGeneration`
+  directly — **not** the pipeline (transformers 5.x pipeline raises `KeyError: num_frames`).
+  Always strip punctuation before WER: `re.sub(r'[^\w\s]', '', text)`.
+- **Python:** 3.12 locally and on Colab. `bitsandbytes` is GPU-only; excluded from `requirements.txt`.
+
 ## Filename conventions
 
 - Python modules: `camelCase.py` (e.g., `promptBuilder.py`, `riskSynthesis.py`)
