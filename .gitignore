@@ -30,6 +30,10 @@ eval/out/
 *.m4a
 *.flac
 
+# Artifacts folder: commit everything (plots, screenshots, reports, demo audio)
+!artifacts/
+!artifacts/**
+
 # IDE
 .vscode/
 .idea/
