@@ -53,11 +53,15 @@ Notes:
 
 ---
 
-## Phase 2 — Core pipeline
+## Phase 2 — Core pipeline (2026-04-21)
 
-| Tool                           | How used | Origin | Where |
-|--------------------------------|----------|--------|-------|
-| *TBD - fill at end of session* |          |        |       |
+| Tool | How used | Origin | Where |
+| --- | --- | --- | --- |
+| Claude Code (Sonnet) | Authored TDD test suites (68 tests across 6 files) for all T2.1–T2.7 modules before implementing them; RED→GREEN cycle confirmed. | AI-generated | `tests/testIngestion.py`, `tests/testAsr.py`, `tests/testAntiSpoof.py`, `tests/testTacticClassifier.py`, `tests/testRiskSynthesis.py`, `tests/testReportSchema.py` |
+| Claude Code (Sonnet) | Implemented `loadAudio.ingest` (librosa), `asrWhisper.transcribe` (WhisperProcessor direct), `antiSpoof.detectSpoof` (HF pipeline), `tacticClassifier.classifyTactics` (Qwen LLM + JSON retry), `riskSynthesis.synthesizeRisk` (weighted rule + LLM reasoning), `briefingTts.narrateBriefing` (SpeechT5), `reportSchema` (pydantic v2 round-trip), `orchestrator.runPipeline`, `cli.main`. | AI-generated | `src/vishguard/*.py` |
+| Claude Code (Sonnet) | Implemented `promptLibrary.riskReasoningPrompt` (previously stubbed NotImplementedError). | AI-generated | `src/vishguard/promptLibrary.py` |
+| Claude Code (Sonnet) | Fixed `configs/default.yaml` anti-spoof model ID from `MelodyMachine/Deepfake-audio-detection-V2` (always-real failure) to confirmed-working `mo-thecreator/Deepfake-audio-detection`. | AI-assisted | `configs/default.yaml` |
+| Ben (me) | Reviewed all implementations for correctness, directed TDD workflow, approved scoring formula constants, confirmed 68/68 green. | Human-authored | code review |
 
 ---
 

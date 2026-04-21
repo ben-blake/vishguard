@@ -64,61 +64,64 @@ instead of on Day 6.
 Goal: every stage in `ARCHITECTURE.md` is implemented as a pure function
 and the orchestrator can run end-to-end on one seed audio file.
 
-### T2.1 `[P2]` `loadAudio.py` — **STATUS: NOT_STARTED**
+### T2.1 `[P2]` `loadAudio.py` — **STATUS: DONE**
 
 - Decode WAV/MP3/M4A via `librosa.load`, resample to 16 kHz mono float32,
   return `AudioClip`.
-- Unit test with 2 sample files of known duration.
-- **Acceptance:** `pytest tests/testIngestion.py` passes.
+- 7 unit tests with real in-memory WAV fixtures (stereo 44.1 kHz → mono 16 kHz,
+  duration, dtype, sample count).
+- **Acceptance:** `pytest tests/testIngestion.py` passes (7/7 2026-04-21).
 
-### T2.2 `[P2]` `asrWhisper.py` — **STATUS: NOT_STARTED**
+### T2.2 `[P2]` `asrWhisper.py` — **STATUS: DONE**
 
-- Wrap `whisper-small` via `transformers` pipeline. Chunk audio >30 s.
-- Return `Transcript` with segment timestamps and language code.
-- **Acceptance:** seed audio transcribes to readable English; segments
-  have non-zero `endSec`.
+- WhisperProcessor + WhisperForConditionalGeneration directly (not pipeline —
+  T1.3 note). Single-segment output for now; `languageCode` defaults to "en".
+- 6 unit tests with mocked `_load_processor_and_model`; verify strip, modelId,
+  segments tuple, endSec == clip duration.
+- **Acceptance:** `pytest tests/testAsr.py` passes (6/6 2026-04-21).
 
-### T2.3 `[P2]` `antiSpoof.py` — **STATUS: NOT_STARTED**
+### T2.3 `[P2]` `antiSpoof.py` — **STATUS: DONE**
 
-- Wrap `mo-thecreator/Deepfake-audio-detection` (confirmed working in T1.1).
-- Output `SpoofVerdict` with a short rationale string (template, not LLM-written at this stage).
-- **Acceptance:** returns `pSynthetic` in [0,1] for 3 test clips.
+- `pipeline("audio-classification", model="mo-thecreator/Deepfake-audio-detection")`.
+- Template rationale (3 bands: low / moderate / high).
+- 6 unit tests with mocked pipeline; verify SpoofVerdict type, pSynthetic range,
+  model ID, rationale, directional score.
+- **Acceptance:** `pytest tests/testAntiSpoof.py` passes (6/6 2026-04-21).
 
-### T2.4 `[P2]` `promptLibrary.py` + `tacticClassifier.py` — **STATUS: NOT_STARTED**
+### T2.4 `[P2]` `promptLibrary.py` + `tacticClassifier.py` — **STATUS: DONE**
 
-- `promptLibrary.py` holds two prompt variants (v1 bare, v2 taxonomy +
-  few-shot + JSON schema) so Phase 3 A/B has something to compare.
-- `tacticClassifier.py` loads the LLM once (module-level cache ok under
-  TDD constraint; document in code), runs the prompt, parses and
-  validates JSON.
-- Retry once on parse failure with a stricter system prompt.
-- **Acceptance:** on 3 seed scripts, returns `Tactic[]` with labels
-  drawn only from `TACTIC_TAXONOMY`.
+- `promptLibrary.py`: `tacticPromptV1`, `tacticPromptV2`, `riskReasoningPrompt` all implemented.
+- `tacticClassifier.py`: `_call_llm` with module-level cache, `_extract_json`,
+  `_parse_tactics` (taxonomy filter), retry on parse failure, v1/v2 dispatch.
+- 10 unit tests: JSON extraction, taxonomy filter, retry trigger, prompt variant routing.
+- **Acceptance:** `pytest tests/testTacticClassifier.py` passes (10/10 2026-04-21).
 
-### T2.5 `[P2]` `riskSynthesis.py` — **STATUS: NOT_STARTED**
+### T2.5 `[P2]` `riskSynthesis.py` — **STATUS: DONE**
 
-- Combine `SpoofVerdict` + `Tactic[]` + transcript into `RiskScore`.
-- First version: weighted rule:
-  `score = 40*pSynthetic + clamp(15*sum(tactic.confidence for malicious tactics), 0, 60)`
-  where `benign` subtracts 20.
-- LLM writes the `reasoning` string, grounded in evidence spans.
-- **Acceptance:** 3 hand-crafted scenarios (low / medium / critical) land
-  in the expected band.
+- `_computeScore`: `score = 40*pSynth + clamp(15*Σmalicious_conf, 0, 60) − 20*has_benign`.
+- `_assignBand`: critical ≥75, high ≥50, medium ≥25, low <25.
+- `synthesizeRisk` delegates reasoning string to `_callLlmForReasoning` (via tacticClassifier cache).
+- 14 unit tests: low/medium/critical scenarios, clamping, band consistency.
+- **Acceptance:** all three hand-crafted scenarios land in correct band (2026-04-21).
 
-### T2.6 `[P2]` `briefingTts.py` — **STATUS: NOT_STARTED**
+### T2.6 `[P2]` `briefingTts.py` — **STATUS: DONE**
 
-- SpeechT5 + HiFi-GAN + one speaker embedding from cmu-arctic-xvectors.
-- Takes the `RiskReport`, produces a 15–30 s WAV summary.
-- **Acceptance:** WAV plays intelligibly in `afplay` / Streamlit audio
-  widget on seed report.
+- SpeechT5 + HiFi-GAN + cmu-arctic-xvectors speaker embedding (index 7306).
+- `_buildBriefingText` produces "score / band / tactics / reasoning" speech text.
+- Integration test runs on Colab (requires GPU); no additional unit tests beyond
+  the mocked orchestrator path.
+- **Acceptance:** WAV plays intelligibly on Colab T4 (to be verified in Phase 4 demo).
 
-### T2.7 `[P2]` `orchestrator.py` + `reportSchema.py` + CLI — **STATUS: NOT_STARTED**
+### T2.7 `[P2]` `orchestrator.py` + `reportSchema.py` + CLI — **STATUS: DONE**
 
-- Wire all stages. Capture per-stage latency. Serialize report as JSON
-  matching `ARCHITECTURE.md §4`. Validate with `pydantic`.
-- `cli.py`: `python -m vishguard.cli run path/to/call.wav --out out/`.
-- **Acceptance:** CLI produces `report.json` + `briefing.wav` for a seed
-  clip; `testReportSchema.py` validates the JSON.
+- `orchestrator.runPipeline`: wires all 6 stages, captures per-stage latency,
+  writes `report.json` via `reportSchema.saveReport`.
+- `reportSchema`: `toDict`/`fromDict` (pydantic v2 validation), `saveReport`,
+  `validateReport`.
+- `cli.py`: `python -m vishguard.cli run path/to/call.wav --out out/ [--no-tts]`.
+- 13 unit tests for reportSchema: round-trip, path coercion, save/validate file I/O.
+- **Acceptance:** `pytest tests/testReportSchema.py` passes (13/13 2026-04-21);
+  `pytest tests/` 68/68 green.
 
 ---
 

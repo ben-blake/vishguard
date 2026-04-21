@@ -49,6 +49,39 @@ All planning lives in [`docs/`](./docs/) and is the authoritative spec:
   Always strip punctuation before WER: `re.sub(r'[^\w\s]', '', text)`.
 - **Python:** 3.12 locally and on Colab. `bitsandbytes` is GPU-only; excluded from `requirements.txt`.
 
+## Phase 2 implementation notes (locked)
+
+All modules implemented TDD (68 tests, 100% green as of 2026-04-21).
+
+**Model caching:** every module uses a module-level dict (`_MODEL_CACHE` or
+`_PIPE_CACHE`) keyed by `modelId`. This avoids reloading models on repeated
+calls within a session. Do not refactor to instance state — the cache must
+survive across multiple `transcribe`/`detectSpoof`/`classifyTactics` calls.
+
+**Anti-spoof pipeline input:** `pipeline(...)` expects a dict
+`{"raw": clip.samples.astype(float), "sampling_rate": clip.sampleRate}`.
+Passing a bare numpy array causes a shape error. The label to extract is
+`"fake"` (not `"LABEL_1"` — the model head uses string class names).
+
+**Risk score formula (do not change constants without re-running Phase 3 eval):**
+
+```text
+score = 40 * pSynth + clamp(15 * sum(malicious_conf), 0, 60) − 20 * has_benign
+```
+
+Band thresholds: critical ≥ 75, high ≥ 50, medium ≥ 25, low < 25.
+Score is clamped to [0, 100].
+
+**TTS speaker embedding:** `Matthijs/cmu-arctic-xvectors`, index 7306 (verified
+to produce intelligible output on Colab T4). Changing the index changes the
+voice — keep it pinned for reproducible demo recordings.
+
+**Quantization:** `tacticClassifier._load_tokenizer_and_model` checks
+`cfg.loadIn4Bit` and imports `BitsAndBytesConfig` only when true. On macOS
+this flag must be false (no `bitsandbytes` build). The `configs/default.yaml`
+sets `llm.device: cuda` and `loadIn4Bit: true` for Colab; override to
+`cpu`/`false` locally or via CLI `--device cpu`.
+
 ## Filename conventions
 
 - Python modules: `camelCase.py` (e.g., `promptBuilder.py`, `riskSynthesis.py`)

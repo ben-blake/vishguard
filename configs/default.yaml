@@ -7,7 +7,7 @@ asr:
   chunkLengthSec: 30
 
 spoof:
-  modelId: MelodyMachine/Deepfake-audio-detection-V2
+  modelId: mo-thecreator/Deepfake-audio-detection
   device: cpu
 
 llm:

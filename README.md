@@ -27,6 +27,22 @@ The 4-bit LLM path (`tacticClassifier.py`, `riskSynthesis.py`) therefore
 only runs on Colab. Whisper, librosa, SpeechT5, and the Streamlit UI all
 work on CPU locally using `whisper-tiny` for demo speed.
 
+## CLI usage
+
+```bash
+# Analyze a call recording (writes report.json + briefing.wav to out/)
+vishguard run call.wav --out out/
+
+# CPU-only (no GPU / no bitsandbytes) — uses whisper-tiny for speed
+vishguard run call.wav --out out/ --device cpu --whisper openai/whisper-tiny --no-tts
+
+# Prompt v1 vs v2 (for Phase 3 A/B eval)
+vishguard run call.wav --out out/ --prompt v1
+```
+
+`--no-tts` skips the SpeechT5 briefing (required on macOS where the 4-bit
+LLM path is also unavailable; use `--device cpu` together).
+
 ## Colab
 
 Open [`notebooks/00_colabSetup.ipynb`](./notebooks/00_colabSetup.ipynb) in

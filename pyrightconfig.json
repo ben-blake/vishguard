@@ -1,0 +1,14 @@
+{
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "notebooks",
+    ".venv",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.git"
+  ],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic"
+}

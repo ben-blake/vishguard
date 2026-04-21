@@ -1,8 +1,106 @@
 """Open-LLM tactic classification stage — Transcript -> tuple[Tactic, ...]."""
 from __future__ import annotations
 
-from .types import LlmConfig, Tactic, Transcript
+import json
+import re
+
+from .promptLibrary import tacticPromptV1, tacticPromptV2
+from .types import TACTIC_TAXONOMY, LlmConfig, Tactic, Transcript
+
+_MODEL_CACHE: dict = {}  # model_id -> (tokenizer, model)
+_TAXONOMY_SET: frozenset[str] = frozenset(TACTIC_TAXONOMY)
+
+
+def _load_tokenizer_and_model(cfg: LlmConfig):
+    if cfg.modelId not in _MODEL_CACHE:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(cfg.modelId)
+
+        if cfg.loadIn4Bit:
+            from transformers import BitsAndBytesConfig
+
+            quant_cfg = BitsAndBytesConfig(
+                load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16
+            )
+            model = AutoModelForCausalLM.from_pretrained(
+                cfg.modelId,
+                quantization_config=quant_cfg,
+                device_map="auto",
+            )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                cfg.modelId,
+                torch_dtype=torch.float16,
+                device_map="auto" if cfg.device == "cuda" else "cpu",
+            )
+
+        model.eval()
+        _MODEL_CACHE[cfg.modelId] = (tokenizer, model)
+    return _MODEL_CACHE[cfg.modelId]
+
+
+def _call_llm(messages: list[dict], cfg: LlmConfig) -> str:
+    import torch
+
+    tokenizer, model = _load_tokenizer_and_model(cfg)
+    text = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=cfg.maxNewTokens,
+            do_sample=False,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+
+    return tokenizer.decode(
+        outputs[0][len(inputs["input_ids"][0]):],
+        skip_special_tokens=True,
+    ).strip()
+
+
+def _extract_json(text: str) -> list[dict]:
+    """Extract first JSON array from model output, raising ValueError on failure."""
+    match = re.search(r"\[.*\]", text, re.DOTALL)
+    if not match:
+        raise ValueError(f"No JSON array found in LLM output: {text[:200]!r}")
+    return json.loads(match.group())
+
+
+def _parse_tactics(raw: list[dict]) -> tuple[Tactic, ...]:
+    """Filter to valid taxonomy labels and coerce field types."""
+    result = []
+    for item in raw:
+        label = str(item.get("label", "")).strip()
+        if label not in _TAXONOMY_SET:
+            continue
+        confidence = float(item.get("confidence", 0.5))
+        spans = tuple(str(s) for s in item.get("evidenceSpans", []))
+        result.append(Tactic(label=label, confidence=confidence, evidenceSpans=spans))
+    return tuple(result)
 
 
 def classifyTactics(transcript: Transcript, cfg: LlmConfig) -> tuple[Tactic, ...]:
-    raise NotImplementedError("T2.4 tacticClassifier.classifyTactics — see docs/TASKS.md")
+    prompt_fn = tacticPromptV2 if cfg.promptVariant == "v2" else tacticPromptV1
+    messages = prompt_fn(transcript.fullText)
+
+    raw_output = _call_llm(messages, cfg)
+
+    try:
+        raw_list = _extract_json(raw_output)
+    except (ValueError, json.JSONDecodeError):
+        retry_messages = [
+            {"role": "system", "content": "Output ONLY a valid JSON array. No prose."},
+            *messages[1:],
+            {"role": "assistant", "content": raw_output},
+            {"role": "user", "content": "Try again. Output ONLY the JSON array:"},
+        ]
+        raw_output2 = _call_llm(retry_messages, cfg)
+        raw_list = _extract_json(raw_output2)
+
+    return _parse_tactics(raw_list)

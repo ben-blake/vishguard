@@ -91,4 +91,22 @@ def tacticPromptV2(transcript: str) -> list[dict]:
 
 def riskReasoningPrompt(transcript: str, pSynthetic: float, tacticsJson: str) -> list[dict]:
     """Prompt for LLM-written risk reasoning string inside RiskScore."""
-    raise NotImplementedError("T2.5 promptLibrary.riskReasoningPrompt — see docs/TASKS.md")
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are a security analyst. Write a 2-4 sentence plain-English risk "
+                "assessment for a phone call. Be concise and factual. "
+                "Output only the assessment text — no JSON, no bullet points."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Synthetic voice probability: {pSynthetic:.2f}\n"
+                f"Detected tactics: {tacticsJson}\n"
+                f"Transcript excerpt: {transcript[:500]}\n\n"
+                "Summarize the risk in 2-4 sentences:"
+            ),
+        },
+    ]
