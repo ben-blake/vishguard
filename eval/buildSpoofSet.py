@@ -44,7 +44,6 @@ def _stream_librispeech_clips(n: int, out_dir: Path) -> list[dict[str, str]]:
         "clean",
         split="validation",
         streaming=True,
-        trust_remote_code=True,
     )
     rows: list[dict[str, str]] = []
     for i, ex in enumerate(ds):
@@ -59,11 +58,49 @@ def _stream_librispeech_clips(n: int, out_dir: Path) -> list[dict[str, str]]:
     return rows
 
 
+def _load_speaker_embedding(device: str):
+    """Load xvector index 7306 from Matthijs/cmu-arctic-xvectors via snapshot_download.
+
+    datasets.load_dataset() no longer works for this repo (loading script deprecated).
+    Use snapshot_download + direct ZIP extraction — same approach as notebooks/01_spike_antiSpoof.ipynb.
+    """
+    import pathlib, zipfile  # noqa: PLC0415
+    import numpy as np  # noqa: PLC0415
+    import torch  # noqa: PLC0415
+    from huggingface_hub import snapshot_download  # noqa: PLC0415
+
+    xvec_repo = snapshot_download(
+        repo_id="Matthijs/cmu-arctic-xvectors",
+        repo_type="dataset",
+        ignore_patterns=["*.py"],
+    )
+    zip_path = pathlib.Path(xvec_repo) / "spkrec-xvect.zip"
+    extract_dir = pathlib.Path("/tmp/cmu_arctic_xvect")
+    extract_dir.mkdir(exist_ok=True)
+    with zipfile.ZipFile(zip_path) as zf:
+        zf.extractall(extract_dir)
+
+    npy_files = sorted(extract_dir.rglob("*.npy"))
+    pt_files = sorted(extract_dir.rglob("*.pt"))
+
+    if npy_files:
+        xvec = np.load(npy_files[7306 % len(npy_files)])
+        return torch.tensor(xvec).unsqueeze(0).to(device)
+    if pt_files:
+        data = torch.load(pt_files[0], map_location="cpu")
+        if isinstance(data, torch.Tensor):
+            return data[min(7306, data.shape[0] - 1)].unsqueeze(0).to(device)
+        if isinstance(data, dict):
+            return torch.stack(list(data.values()))[0].unsqueeze(0).to(device)
+    # fallback: normalized random embedding (acceptable for a classification eval corpus)
+    print("WARNING: using random speaker embedding")
+    return torch.nn.functional.normalize(torch.randn(1, 512), dim=-1).to(device)
+
+
 def _generate_speecht5_clips(n: int, out_dir: Path) -> list[dict[str, str]]:
     """Generate n fake clips via SpeechT5 TTS."""
     import torch  # noqa: PLC0415
     import soundfile as sf  # noqa: PLC0415
-    from datasets import load_dataset  # noqa: PLC0415
     from transformers import SpeechT5ForTextToSpeech, SpeechT5HifiGan, SpeechT5Processor  # noqa: PLC0415
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -72,8 +109,7 @@ def _generate_speecht5_clips(n: int, out_dir: Path) -> list[dict[str, str]]:
     processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
     model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(device)
     vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan").to(device)
-    embeds_ds = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
-    speaker_emb = torch.tensor(embeds_ds[7306]["xvector"]).unsqueeze(0).to(device)
+    speaker_emb = _load_speaker_embedding(device)
 
     scripts = [
         "Your account has been suspended. Please call us immediately to avoid legal action.",

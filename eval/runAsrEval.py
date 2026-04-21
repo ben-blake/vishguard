@@ -85,7 +85,7 @@ def _run_eval(out_dir: Path) -> None:
 
     # Stream LibriSpeech clips
     ds = load_dataset(
-        "openslr/librispeech_asr", "clean", split="validation", streaming=True, trust_remote_code=True
+        "openslr/librispeech_asr", "clean", split="validation", streaming=True
     )
     clips: list[tuple[str, np.ndarray, int]] = []
     for i, ex in enumerate(ds):
