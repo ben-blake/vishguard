@@ -44,7 +44,8 @@ Notes:
 
 - Python venv created with `python3 -m venv .venv` (system Python 3.11.9 via pyenv; Colab runs 3.12.13 — minor gap, no 3.12-only syntax in the codebase).
 - `bitsandbytes` intentionally excluded from `requirements.txt` because it has no macOS build; the Colab setup cell installs `requirements-gpu.txt` when CUDA is available.
-- T1.1/T1.2/T1.3 spike notebooks are authored but not yet executed — acceptance to be recorded after first Colab run.
+- T1.1 spike completed 2026-04-21: `MelodyMachine/Deepfake-audio-detection-V2` failed smoke test (all scores 0.0). `mo-thecreator/Deepfake-audio-detection` confirmed working — real<0.5=10/10, synth>=0.5=7/10. Primary model updated in ARCHITECTURE.md §2.2.
+- T1.2/T1.3 spike notebooks authored but not yet executed — acceptance to be recorded after first Colab run.
 
 ---
 

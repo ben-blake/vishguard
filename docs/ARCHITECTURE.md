@@ -74,18 +74,19 @@ Libraries: `transformers` `AutoModelForSpeechSeq2Seq` + pipeline, or
 
 ### 2.2 Anti-spoof / synthetic-voice detection
 
-| Role     | HF model ID                                  | Notes                                                                        |
-|----------|----------------------------------------------|------------------------------------------------------------------------------|
-| Primary  | `MelodyMachine/Deepfake-audio-detection-V2`  | wav2vec2-based V2 release, logits to real/fake. Public, non-gated.           |
-| Alt A    | `motheecreator/Deepfake-audio-detection`     | Earlier wav2vec2 checkpoint; second opinion for ensemble in Phase 3.         |
-| Alt B    | `mo-thecreator/Deepfake-audio-detection`     | Alt author version; use only if primary or Alt A repo disappears.            |
-| Research | AASIST (ASVspoof reference) via raw PyTorch  | **Out of scope** - no HF wrapper; listed so reviewers see it was considered. |
+| Role | HF model ID | Notes |
+| --- | --- | --- |
+| Primary | `mo-thecreator/Deepfake-audio-detection` | **Confirmed working (T1.1 2026-04-21).** real<0.5=10/10, synth>=0.5=7/10 vs SpeechT5. |
+| Alt A | `MelodyMachine/Deepfake-audio-detection-V2` | **FAILED smoke test** — p(synth)≈0.0 for all 20 clips; always predicts real. |
+| Research | AASIST (ASVspoof) via raw PyTorch | Out of scope — no HF wrapper; listed so reviewers see it was considered. |
 
-**Phase-1 spike** must confirm that at least one of the above produces
-stable logits on (a) ASVspoof 2019 LA samples and (b) SpeechT5-generated
-deepfakes. If all three fail the smoke test, the fallback is to treat
-"synthetic likelihood" as a prompted-LLM signal based on transcript
-artifacts (TTS-style phrasing) — clearly documented as a degraded mode.
+**Phase-1 result:** `mo-thecreator/Deepfake-audio-detection` is the working primary.
+`MelodyMachine/Deepfake-audio-detection-V2` exhibits distribution shift — always predicts
+"real" with 0.9999 confidence regardless of input. See `docs/FAILURES.md` when created.
+
+If primary fails in Phase 3 eval, fallback is to treat "synthetic likelihood" as a
+prompted-LLM signal based on transcript artifacts (TTS-style phrasing) — clearly
+documented as a degraded mode.
 
 ### 2.3 Tactic classifier — open LLM, zero-shot
 
@@ -248,7 +249,7 @@ video overlay, slide screenshot) reads from this.
     ]
   },
   "spoof": {
-    "modelId": "MelodyMachine/Deepfake-audio-detection-V2",
+    "modelId": "mo-thecreator/Deepfake-audio-detection",
     "pSynthetic": 0.87,
     "rationale": "High-confidence synthetic; prosody artifacts typical of TTS output."
   },

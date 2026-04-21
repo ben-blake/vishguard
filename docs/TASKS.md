@@ -16,15 +16,14 @@ Goal: prove the three riskiest pieces work on representative input before
 committing to the full build. If a spike fails, the plan adapts here
 instead of on Day 6.
 
-### T1.1 `[P1]` Anti-spoof model smoke test — **STATUS: NOT_STARTED**
+### T1.1 `[P1]` Anti-spoof model smoke test — **STATUS: DONE**
 
-- Load `MelodyMachine/Deepfake-audio-detection-V2` in a notebook.
-- Run on 10 real speech samples (LibriSpeech or free podcast clips) and
-  10 SpeechT5-generated samples.
-- **Acceptance:** model loads under 200 MB, returns class probabilities,
-  real vs. synthetic separation visible on a histogram (not necessarily
-  publication-grade — just "signal exists"). Record results in
-  `notebooks/01_spike_antiSpoof.ipynb`.
+- ~~Load `MelodyMachine/Deepfake-audio-detection-V2`~~ — FAILED smoke test; always predicts real.
+- **Working model: `mo-thecreator/Deepfake-audio-detection`** (promoted to primary in ARCHITECTURE.md §2.2).
+- Ran on 10 LibriSpeech real clips + 10 SpeechT5 synthetic clips on Colab T4.
+- **Results (2026-04-21):** real p(synth) all=0.0 (10/10 correct), synth p(synth) 7/10 ≥ 0.5.
+- Separation visible on histogram. Acceptance criteria met.
+- See `notebooks/01_spike_antiSpoof.ipynb`.
 
 ### T1.2 `[P1]` Open-LLM structured-output spike — **STATUS: NOT_STARTED**
 
@@ -90,8 +89,8 @@ and the orchestrator can run end-to-end on one seed audio file.
 
 ### T2.3 `[P2]` `antiSpoof.py` — **STATUS: NOT_STARTED**
 
-- Wrap the spike model from T1.1. Output `SpoofVerdict` with a short
-  rationale string (template, not LLM-written at this stage).
+- Wrap `mo-thecreator/Deepfake-audio-detection` (confirmed working in T1.1).
+- Output `SpoofVerdict` with a short rationale string (template, not LLM-written at this stage).
 - **Acceptance:** returns `pSynthetic` in [0,1] for 3 test clips.
 
 ### T2.4 `[P2]` `promptLibrary.py` + `tacticClassifier.py` — **STATUS: NOT_STARTED**
