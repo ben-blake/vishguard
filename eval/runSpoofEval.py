@@ -76,7 +76,7 @@ def _run_eval(manifest_path: Path, out_dir: Path) -> None:
     from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
     from vishguard.antiSpoof import detectSpoof
-    from vishguard.loadAudio import loadAudio
+    from vishguard.loadAudio import ingest
     from vishguard.types import SpoofConfig
 
     cfg = SpoofConfig()
@@ -88,7 +88,7 @@ def _run_eval(manifest_path: Path, out_dir: Path) -> None:
     sources: list[str] = []
 
     for _, row in df.iterrows():
-        clip = loadAudio(row["path"])
+        clip = ingest(row["path"])
         verdict = detectSpoof(clip, cfg)
         label_int = 1 if row["label"] == "fake" else 0
         pred_int = 1 if verdict.pSynthetic >= 0.5 else 0
