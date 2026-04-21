@@ -65,11 +65,54 @@ def _call_llm(messages: list[dict], cfg: LlmConfig) -> str:
 
 
 def _extract_json(text: str) -> list[dict]:
-    """Extract first JSON array from model output, raising ValueError on failure."""
-    match = re.search(r"\[.*\]", text, re.DOTALL)
-    if not match:
+    """Extract first JSON array from model output, raising ValueError on failure.
+
+    Uses bracket counting so the regex doesn't overshoot the closing ] when
+    the model emits prose after the array. Also normalises Python-style single
+    quotes to double quotes as a fallback before giving up.
+    """
+    start = text.find("[")
+    if start == -1:
         raise ValueError(f"No JSON array found in LLM output: {text[:200]!r}")
-    return json.loads(match.group())
+
+    depth = 0
+    in_str = False
+    escape_next = False
+    end = -1
+    for i, ch in enumerate(text[start:], start):
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\" and in_str:
+            escape_next = True
+            continue
+        if ch == '"':
+            in_str = not in_str
+        if in_str:
+            continue
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+
+    if end == -1:
+        raise ValueError(f"Unmatched '[' in LLM output: {text[:200]!r}")
+
+    candidate = text[start : end + 1]
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: replace Python-style single-quoted strings with double quotes.
+    normalised = re.sub(r"'([^']*)'", r'"\1"', candidate)
+    try:
+        return json.loads(normalised)
+    except json.JSONDecodeError:
+        raise ValueError(f"JSON parse failed even after quote normalisation: {candidate[:200]!r}")
 
 
 def _parse_tactics(raw: list[dict]) -> tuple[Tactic, ...]:
@@ -101,6 +144,9 @@ def classifyTactics(transcript: Transcript, cfg: LlmConfig) -> tuple[Tactic, ...
             {"role": "user", "content": "Try again. Output ONLY the JSON array:"},
         ]
         raw_output2 = _call_llm(retry_messages, cfg)
-        raw_list = _extract_json(raw_output2)
+        try:
+            raw_list = _extract_json(raw_output2)
+        except (ValueError, json.JSONDecodeError):
+            return ()  # both attempts failed — count as no tactics detected
 
     return _parse_tactics(raw_list)

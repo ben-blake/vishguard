@@ -61,8 +61,12 @@ def _run_eval(corpus_path: Path, out_dir: Path) -> None:
     for variant in ("v1", "v2"):
         cfg = LlmConfig(promptVariant=variant)
         y_pred: list[set] = []
-        for ex in examples:
-            tactics = classifyTactics(_make_transcript(ex["text"]), cfg)
+        for i, ex in enumerate(examples):
+            try:
+                tactics = classifyTactics(_make_transcript(ex["text"]), cfg)
+            except Exception as exc:
+                print(f"  [WARN] example {i} failed ({exc}); counting as no prediction")
+                tactics = ()
             y_pred.append({t.label for t in tactics})
 
         macro = computeMacroF1(y_true, y_pred, TACTIC_TAXONOMY)
