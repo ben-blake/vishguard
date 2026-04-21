@@ -25,16 +25,14 @@ instead of on Day 6.
 - Separation visible on histogram. Acceptance criteria met.
 - See `notebooks/01_spike_antiSpoof.ipynb`.
 
-### T1.2 `[P1]` Open-LLM structured-output spike — **STATUS: NOT_STARTED**
+### T1.2 `[P1]` Open-LLM structured-output spike — **STATUS: DONE**
 
-- Load `Qwen/Qwen2.5-3B-Instruct` on Colab T4 in fp16.
-- Write a tactic-classification prompt that asks for JSON matching the
-  `Tactic[]` schema in `ARCHITECTURE.md`.
-- Run on 10 hand-written scam scripts covering ≥4 tactics.
-- **Acceptance:** ≥9/10 outputs parse as valid JSON AND use labels from
-  the taxonomy. If <9/10, try Phi-3-mini and Gemma-2-2b. If all three
-  fail, escalate to Qwen-7B-Instruct in 4-bit or introduce constrained
-  decoding (`outlines`).
+- Qwen/Qwen2.5-3B-Instruct loaded on Colab T4 in fp16 (`device: cuda:0`).
+- **Results (2026-04-21):** valid_json=10/10, labels_all_in_taxonomy=10/10. Acceptance bar passed.
+- Semantic patterns for Phase 3 prompt v2: `pretexting` overused as catch-all;
+  `credential_harvesting` and `fear_intimidation` systematically underdetected;
+  `benign` spuriously added to scam calls.
+- See `notebooks/02_spike_llmJson.ipynb`.
 
 ### T1.3 `[P1]` Whisper WER floor check — **STATUS: NOT_STARTED**
 
