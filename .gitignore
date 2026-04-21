@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Data + outputs (never commit audio or eval artifacts)
+data/
+out/
+eval/out/
+*.wav
+*.mp3
+*.m4a
+*.flac
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Model caches (HuggingFace / torch)
+.cache/
+hf_cache/

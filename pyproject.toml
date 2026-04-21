@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vishguard"
+version = "0.1.0"
+description = "Audio pipeline that produces a structured vishing-risk report from a phone-call recording."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Ben" }]
+license = { text = "MIT" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

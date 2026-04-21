@@ -1,0 +1,7 @@
+# GPU-only extras. Install on Colab / CUDA machines only — bitsandbytes
+# has no macOS build and will fail `pip install` on Apple Silicon or Intel
+# Mac. The local venv should skip this file.
+#
+# 0.45+ is required for CUDA 12.8 support (Colab 2026-04 ships cu128 torch).
+
+bitsandbytes>=0.45

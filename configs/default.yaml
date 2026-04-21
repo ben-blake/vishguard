@@ -1,0 +1,24 @@
+# Default pipeline configuration. Streamlit can override any field at
+# runtime. Keep this file versioned so eval runs are reproducible.
+
+asr:
+  modelId: openai/whisper-small
+  device: cpu
+  chunkLengthSec: 30
+
+spoof:
+  modelId: MelodyMachine/Deepfake-audio-detection-V2
+  device: cpu
+
+llm:
+  modelId: Qwen/Qwen2.5-3B-Instruct
+  device: cuda
+  loadIn4Bit: true
+  maxNewTokens: 512
+  promptVariant: v2
+
+tts:
+  modelId: microsoft/speecht5_tts
+  vocoderId: microsoft/speecht5_hifigan
+  speakerEmbeddingId: Matthijs/cmu-arctic-xvectors
+  device: cpu
