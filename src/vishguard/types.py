@@ -100,7 +100,7 @@ class AsrConfig:
 
 @dataclass(frozen=True)
 class SpoofConfig:
-    modelId: str = "MelodyMachine/Deepfake-audio-detection-V2"
+    modelId: str = "mo-thecreator/Deepfake-audio-detection"
     device: str = "cpu"
 
 

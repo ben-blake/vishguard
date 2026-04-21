@@ -11,6 +11,9 @@ requires-python = ">=3.10"
 authors = [{ name = "Ben" }]
 license = { text = "MIT" }
 
+[project.scripts]
+vishguard = "vishguard.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
