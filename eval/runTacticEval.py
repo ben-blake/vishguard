@@ -46,19 +46,23 @@ def computeMacroF1(y_true: list[set], y_pred: list[set], labels: tuple[str, ...]
 def _run_eval(corpus_path: Path, out_dir: Path) -> None:
     import pandas as pd
     from vishguard.tacticClassifier import classifyTactics  # noqa: PLC0415
-    from vishguard.types import LlmConfig  # noqa: PLC0415
+    from vishguard.types import LlmConfig, Transcript, TranscriptSegment  # noqa: PLC0415
 
     from eval.buildTacticSet import loadCorpus as _load  # noqa: PLC0415
 
     examples = _load(corpus_path)
     y_true: list[set] = [set(ex["labels"]) for ex in examples]
 
+    def _make_transcript(text: str) -> Transcript:
+        seg = TranscriptSegment(startSec=0.0, endSec=30.0, text=text)
+        return Transcript(fullText=text, segments=(seg,), languageCode="en", modelId="eval-corpus")
+
     rows: list[dict] = []
     for variant in ("v1", "v2"):
         cfg = LlmConfig(promptVariant=variant)
         y_pred: list[set] = []
         for ex in examples:
-            tactics = classifyTactics(ex["text"], cfg)
+            tactics = classifyTactics(_make_transcript(ex["text"]), cfg)
             y_pred.append({t.label for t in tactics})
 
         macro = computeMacroF1(y_true, y_pred, TACTIC_TAXONOMY)
