@@ -25,6 +25,9 @@ env/
 data/
 out/
 eval/out/
+# But do commit the eval corpus (JSONL scripts, no audio)
+!eval/data/
+!eval/data/*
 *.wav
 *.mp3
 *.m4a
