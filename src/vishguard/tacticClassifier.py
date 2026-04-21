@@ -115,16 +115,26 @@ def _extract_json(text: str) -> list[dict]:
         raise ValueError(f"JSON parse failed even after quote normalisation: {candidate[:200]!r}")
 
 
-def _parse_tactics(raw: list[dict]) -> tuple[Tactic, ...]:
-    """Filter to valid taxonomy labels and coerce field types."""
+def _parse_tactics(raw: list) -> tuple[Tactic, ...]:
+    """Filter to valid taxonomy labels and coerce field types.
+
+    Accepts two formats the model may return:
+      - list of dicts: [{"label": "urgency", "confidence": 0.9, "evidenceSpans": [...]}]
+      - flat string list: ["urgency", "authority"]
+    """
     result = []
     for item in raw:
-        label = str(item.get("label", "")).strip()
-        if label not in _TAXONOMY_SET:
-            continue
-        confidence = float(item.get("confidence", 0.5))
-        spans = tuple(str(s) for s in item.get("evidenceSpans", []))
-        result.append(Tactic(label=label, confidence=confidence, evidenceSpans=spans))
+        if isinstance(item, str):
+            label = item.strip()
+            if label in _TAXONOMY_SET:
+                result.append(Tactic(label=label, confidence=0.5, evidenceSpans=()))
+        elif isinstance(item, dict):
+            label = str(item.get("label", "")).strip()
+            if label not in _TAXONOMY_SET:
+                continue
+            confidence = float(item.get("confidence", 0.5))
+            spans = tuple(str(s) for s in item.get("evidenceSpans", []))
+            result.append(Tactic(label=label, confidence=confidence, evidenceSpans=spans))
     return tuple(result)
 
 
