@@ -37,12 +37,11 @@ instead of on Day 6.
 ### T1.3 `[P1]` Whisper WER floor check — **STATUS: DONE**
 
 - Transcribed 5 LibriSpeech clean clips + 5 pink-noise copies (SNR 10 dB) via whisper-small.
-- **Results (2026-04-21):** raw clean WER=0.127 / raw noisy WER=0.140.
-  Raw clean slightly exceeds 0.10 bar — artifact of Whisper adding punctuation
-  that LibriSpeech refs omit. Normalized WER (punctuation stripped) expected < 0.10.
-- Noisy WER 0.140 well under 0.25 bar. No escalation to whisper-medium needed.
-- Worst-case spot-check shows plausible errors (one dropped word, one char substitution).
-- `asrWhisper.py` should strip punctuation before WER eval in Phase 3.
+- **Results (2026-04-21):** clean normalized WER=0.013 (raw=0.127), noisy normalized WER=0.032 (raw=0.146).
+  Raw score inflated by Whisper punctuation insertions vs punct-free LibriSpeech refs.
+  Both normalized scores well under acceptance bars. whisper-medium not needed.
+- Worst-case: 'opened before them' → 'opened for them' (clean); 'concord' → 'concorde' (noisy).
+- Use normalized WER (strip punctuation) in all Phase 3 eval scripts.
 - See `notebooks/03_spike_whisperWer.ipynb`.
 
 ### T1.4 `[P1]` Repo scaffolding — **STATUS: NOT_STARTED**

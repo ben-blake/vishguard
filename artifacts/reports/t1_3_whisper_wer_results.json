@@ -1,0 +1,70 @@
+{
+  "task": "T1.3",
+  "title": "Whisper WER floor check",
+  "date": "2026-04-21",
+  "runtime": "Colab T4 (GPU)",
+  "status": "PASSED",
+
+  "model": {
+    "id": "openai/whisper-small",
+    "dtype": "float16",
+    "device": "cuda",
+    "loaded_via": "WhisperProcessor + WhisperForConditionalGeneration (not pipeline)"
+  },
+
+  "corpus": {
+    "source": "openslr/librispeech_asr test-clean (streaming)",
+    "n_clips": 5,
+    "avg_duration_sec": 11.4,
+    "noise_type": "pink (1/f spectrum shaping)",
+    "noise_snr_db": 10.0
+  },
+
+  "normalization": {
+    "method": "re.sub(r'[^\\w\\s]', '', text).lower().strip()",
+    "rationale": "Whisper inserts commas, periods, leading spaces; LibriSpeech refs are punctuation-free uppercase. Raw WER is inflated by these insertions."
+  },
+
+  "results": {
+    "clean": {
+      "raw_wer": 0.127,
+      "normalized_wer": 0.013,
+      "bar": 0.10,
+      "passed": true
+    },
+    "noisy_snr10db": {
+      "raw_wer": 0.146,
+      "normalized_wer": 0.032,
+      "bar": 0.25,
+      "passed": true
+    }
+  },
+
+  "worst_case": {
+    "clean": {
+      "ref": "she taught her daughter then by her own affection for it that love for a country where they had both been hospitably received and where a brilliant future opened before them",
+      "hyp": " she taught her daughter, then, by her own affection for it, that love for a country where they had both been hospitably received and where a brilliant future opened for them.",
+      "error": "single word substitution/deletion: 'before' dropped"
+    },
+    "noisy": {
+      "ref": "concord returned to its place amidst the tents",
+      "hyp": " concorde returned to its place amidst the tents.",
+      "error": "one character substitution: 'concord' → 'concorde', fully intelligible"
+    }
+  },
+
+  "acceptance": {
+    "clean_norm_under_0_10": true,
+    "noisy_norm_under_0_25": true,
+    "spot_check_plausible": true,
+    "escalate_to_medium": false
+  },
+
+  "phase3_implications": [
+    "All Phase 3 WER scripts must apply punctuation normalization before jiwer.wer().",
+    "whisper-small is sufficient — no upgrade to whisper-medium needed.",
+    "Noisy WER margin (0.032 vs 0.25 bar) means SNR 10 dB inputs are safe for the pipeline."
+  ],
+
+  "notebook": "notebooks/03_spike_whisperWer.ipynb"
+}
