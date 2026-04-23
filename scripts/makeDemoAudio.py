@@ -69,7 +69,7 @@ def main() -> None:
 
     print("Loading speaker embedding…")
     import zipfile, tempfile
-    snap = snapshot_download(repo_id=EMBED_ID)
+    snap = snapshot_download(repo_id=EMBED_ID, repo_type="dataset")
     zip_path = next(Path(snap).glob("*.zip"))
     with tempfile.TemporaryDirectory() as tmp:
         with zipfile.ZipFile(zip_path) as zf:
