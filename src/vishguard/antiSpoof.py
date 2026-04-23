@@ -42,7 +42,9 @@ def _buildRationale(p_synthetic: float) -> str:
 def detectSpoof(clip: AudioClip, cfg: SpoofConfig) -> SpoofVerdict:
     pipe = _load_pipeline(cfg)
     preds = pipe({"raw": clip.samples, "sampling_rate": clip.sampleRate})
-    fake_score = next(p["score"] for p in preds if p["label"].lower() == "fake")
+    fake_score = next((p["score"] for p in preds if p["label"].lower() == "fake"), None)
+    if fake_score is None:
+        raise ValueError(f"No 'fake' label in anti-spoof pipeline output: {preds}")
     return SpoofVerdict(
         pSynthetic=float(fake_score),
         modelId=cfg.modelId,

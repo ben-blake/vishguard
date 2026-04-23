@@ -132,7 +132,10 @@ def _parse_tactics(raw: list) -> tuple[Tactic, ...]:
             label = str(item.get("label", "")).strip()
             if label not in _TAXONOMY_SET:
                 continue
-            confidence = float(item.get("confidence", 0.5))
+            try:
+                confidence = float(item.get("confidence", 0.5))
+            except (ValueError, TypeError):
+                confidence = 0.5
             spans = tuple(str(s) for s in item.get("evidenceSpans", []))
             result.append(Tactic(label=label, confidence=confidence, evidenceSpans=spans))
     return tuple(result)

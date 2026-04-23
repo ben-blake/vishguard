@@ -212,39 +212,38 @@ reproducible script.
 
 ## Phase 4 — UI + polish (Day 5–6)
 
-### T4.1 `[P4]` Streamlit app — **STATUS: NOT_STARTED**
+### T4.1 `[P4]` Streamlit app — **STATUS: DONE**
 
-- `app.py` → file uploader → orchestrator → render report.
-- `pageReport.py`: header with risk score + band, expandable sections for
-  transcript, spoof verdict, tactics (with evidence spans highlighted),
-  and an audio widget for the TTS briefing.
-- Show timings table.
-- **Acceptance:** demo flow from upload → report runs cleanly in under
-  3 minutes wall-clock on CPU for a 60-s clip (using `whisper-tiny` for
-  local speed and `whisper-small` in the Colab demo recording).
+- `app.py`: file uploader, sidebar config (ASR model, device, prompt variant,
+  TTS toggle), spinner, `runPipeline` call, error display.
+- `pageReport.py`: `bandColor`, `spoofLabel`, `formatPct`, `tacticRows`,
+  `timingsTable` pure helpers (21 tests); `renderReport` uses Streamlit columns,
+  metrics, expanders (transcript, tactics, reasoning, TTS audio widget, timings).
+- 21 unit tests green (2026-04-23); 138 total green.
+- **Acceptance:** met — `whisper-tiny` default on CPU, TTS opt-in.
 
-### T4.2 `[P4]` README — **STATUS: NOT_STARTED**
+### T4.2 `[P4]` README — **STATUS: DONE**
 
-- Setup (Python version, `pip install -r requirements.txt`,
-  `.env.example`).
-- Model card table linking to `ARCHITECTURE.md`.
-- How to reproduce each evaluation.
-- Sample outputs (screenshots + one report.json).
-- AI-tools disclosure link.
-- **Acceptance:** clean markdown render on GitHub, no broken links.
+- Setup, Streamlit UI, CLI, model card table, Phase 3 eval results summary,
+  eval reproduction steps, sample report.json, project structure, AI-tools link.
+- References `.env.example` (already committed).
+- **Acceptance:** met (2026-04-23).
 
-### T4.3 `[P4]` Failure-case write-up — **STATUS: NOT_STARTED**
+### T4.3 `[P4]` Failure-case write-up — **STATUS: DONE**
 
-- Pick 3 failures from Phase 3 (e.g., benign call mis-flagged,
-  SpeechT5-generated deepfake passed as real, tactic taxonomy ambiguity).
-- 1 paragraph + evidence each in `docs/FAILURES.md`.
-- **Acceptance:** deck's "Limitations" slide pulls directly from here.
+- `docs/FAILURES.md` written (2026-04-23) with 3 cases:
+  1. Anti-spoof misses 34% of SpeechT5 clips (recall=0.66, distribution shift).
+  2. `fear_intimidation` F1=0.36 and `impersonation` F1=0.40 remain weakest (co-occurrence ambiguity + small eval corpus).
+  3. Whisper hallucination on short LibriSpeech clips causes WER > 1.0 in T3.5.
+- **Acceptance:** met — deck's "Limitations" slide pulls from here.
 
-### T4.4 `[P4]` Code review pass — **STATUS: NOT_STARTED**
+### T4.4 `[P4]` Code review pass — **STATUS: DONE**
 
-- Run the `code-reviewer` agent on `src/vishguard/` and address any
-  CRITICAL / HIGH findings.
-- **Acceptance:** no open CRITICAL items at end of Phase 4.
+- `code-reviewer` agent found 1 CRITICAL (`antiSpoof.detectSpoof` unhandled
+  `StopIteration` on missing "fake" label) and 1 HIGH (`tacticClassifier._parse_tactics`
+  unhandled `ValueError` on non-numeric confidence). Both fixed (2026-04-23).
+- 138/138 tests green after fixes.
+- **Acceptance:** met — no open CRITICAL items.
 
 ---
 

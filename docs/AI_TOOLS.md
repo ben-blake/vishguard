@@ -94,11 +94,17 @@ Notes:
 
 ---
 
-## Phase 4 — UI + polish
+## Phase 4 — UI + polish (2026-04-23)
 
-| Tool                           | How used | Origin | Where |
-|--------------------------------|----------|--------|-------|
-| *TBD - fill at end of session* |          |        |       |
+| Tool | How used | Origin | Where |
+| --- | --- | --- | --- |
+| Claude Code (Sonnet) | Authored TDD tests (21 tests) for `pageReport.py` pure helper functions (`bandColor`, `spoofLabel`, `formatPct`, `tacticRows`, `timingsTable`) before implementing them; RED→GREEN cycle confirmed (138/138 total). | AI-generated | `tests/testUiPageReport.py` |
+| Claude Code (Sonnet) | Implemented `pageReport.py` helper functions and `renderReport` (Streamlit columns, metrics, expanders, audio widget, timings table). | AI-generated | `src/vishguard/ui/pageReport.py` |
+| Claude Code (Sonnet) | Implemented `app.py` Streamlit entry point: file uploader, sidebar config (ASR model, device, prompt variant, TTS toggle), spinner, `runPipeline` call, error display. | AI-generated | `app.py` |
+| Claude Code (Sonnet) | Wrote full README (setup, Streamlit UI, CLI, model card table, Phase 3 eval results summary, eval reproduction steps, sample output, project structure, AI-tools link). | AI-generated | `README.md` |
+| Claude Code (Sonnet) | Wrote `docs/FAILURES.md` — 3 failure cases from Phase 3: SpeechT5 anti-spoof recall=0.66, fear_intimidation/impersonation F1 weakness, Whisper hallucination on short LibriSpeech clips. | AI-generated | `docs/FAILURES.md` |
+| Claude Code (Sonnet) | Ran `code-reviewer` agent on `src/vishguard/`; found 1 CRITICAL (`antiSpoof` unhandled `StopIteration`) and 1 HIGH (`tacticClassifier` unhandled `ValueError` on non-numeric confidence); applied both fixes. | AI-assisted | `src/vishguard/antiSpoof.py`, `src/vishguard/tacticClassifier.py` |
+| Ben (me) | Directed TDD workflow, reviewed all implementations, confirmed 138/138 green. Reviewed README and FAILURES.md content. | Human-authored | code review |
 
 ---
 
