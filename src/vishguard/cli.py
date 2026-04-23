@@ -23,7 +23,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--whisper", default="openai/whisper-small", help="Whisper model ID"
     )
     run_p.add_argument(
-        "--prompt", default="v2", choices=["v1", "v2"], help="Tactic prompt variant"
+        "--prompt", default="v4", choices=["v1", "v2", "v3", "v4"], help="Tactic prompt variant"
     )
 
     return parser.parse_args(argv)
