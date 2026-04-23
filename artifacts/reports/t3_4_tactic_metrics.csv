@@ -1,0 +1,5 @@
+variant,macro_f1,f1_authority,f1_urgency,f1_pretexting,f1_credential_harvesting,f1_impersonation,f1_financial_manipulation,f1_fear_intimidation,f1_reward_prize,f1_tech_support,f1_benign
+v1,0.0239,0.0,0.0,0.0,0.0,0.0,0.1333,0.1053,0.0,0.0,0.0
+v2,0.4536,0.4211,0.5926,0.0952,0.5161,0.0,0.7586,0.2857,0.6667,0.8,0.4
+v3,0.5153,0.5,0.6154,0.24,0.3571,0.5556,0.6087,0.2,0.6667,0.9091,0.5
+v4,0.6036,0.6364,0.5455,0.4615,0.4667,0.4,0.6957,0.3636,0.6667,0.8,1.0
