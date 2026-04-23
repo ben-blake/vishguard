@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 import streamlit as st
+import torch
 
 from vishguard.orchestrator import runPipeline
 from vishguard.types import AsrConfig, LlmConfig, SpoofConfig, TtsConfig
@@ -32,7 +33,10 @@ def _sidebar_config() -> tuple[AsrConfig, SpoofConfig, LlmConfig, TtsConfig, boo
         index=0,
         help="whisper-tiny is fastest on CPU (~30s for a 60s clip).",
     )
-    device = st.sidebar.selectbox("Device", ["cpu", "cuda"], index=0)
+    device = st.sidebar.selectbox(
+        "Device", ["cpu", "cuda"],
+        index=1 if torch.cuda.is_available() else 0,
+    )
     prompt_variant = st.sidebar.selectbox(
         "Tactic prompt", ["v4", "v3", "v2", "v1"], index=0,
         help="v4 gives best macro-F1 (0.604).",
