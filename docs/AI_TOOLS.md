@@ -74,10 +74,15 @@ Notes:
 | Claude Code (Sonnet) | Implemented `runSpoofEval.py` (accuracy, precision, recall, F1, EER, confusion matrix PNG via sklearn). | AI-generated | `eval/runSpoofEval.py` |
 | Claude Code (Sonnet) | Generated all 50 tactic-classification corpus scripts in `eval/data/tactics.jsonl` — 5 per tactic covering all 10 taxonomy labels with multi-label overlap. | AI-generated | `eval/data/tactics.jsonl` |
 | Claude Code (Sonnet) | Implemented `buildTacticSet.py` (corpus loader, per-entry and corpus-level validators, label coverage report). | AI-generated | `eval/buildTacticSet.py` |
-| Claude Code (Sonnet) | Implemented `runTacticEval.py` (per-label binary F1, macro-F1 across prompt v1 vs v2, CSV output). | AI-generated | `eval/runTacticEval.py` |
+| Claude Code (Sonnet) | Implemented `runTacticEval.py` (per-label binary F1, macro-F1 across prompt v1/v2/v3/v4, CSV output). | AI-generated | `eval/runTacticEval.py` |
 | Claude Code (Sonnet) | Implemented `runAsrEval.py` (text normalization, Gaussian noise injection at target SNR dB, WER via jiwer, grouped bar chart). | AI-generated | `eval/runAsrEval.py` |
 | Claude Code (Sonnet) | Implemented `runLatencyBench.py` (synthetic WAV generation, per-stage timing aggregation, CSV output). | AI-generated | `eval/runLatencyBench.py` |
-| Ben (me) | Directed TDD workflow, reviewed all eval script designs, confirmed 117/117 green. Colab GPU runs for T3.1–T3.6 pending. | Human-authored | review + Colab |
+| Claude Code (Sonnet) | Authored `notebooks/04_phase3_eval.ipynb` — Colab harness running T3.1–T3.6 in order, with setup cell, results cells, and zip-download cell. | AI-generated | `notebooks/04_phase3_eval.ipynb` |
+| Claude Code (Sonnet) | Debugged 5 Colab runtime errors: `trust_remote_code` removed in datasets v4; `cmu-arctic-xvectors` loading script deprecated (switched to `snapshot_download`+ZIP); `loadAudio` import name wrong; `eval/data/` blocked by `.gitignore`; raw string passed to `classifyTactics` instead of `Transcript`. | AI-assisted | `eval/buildSpoofSet.py`, `eval/runSpoofEval.py`, `eval/runTacticEval.py`, `.gitignore` |
+| Claude Code (Sonnet) | Fixed `tacticClassifier._extract_json` to use bracket-counting loop instead of greedy `\[.*\]` regex (over-matched closing bracket); added single-quote normalization fallback. Fixed `_parse_tactics` to handle flat `list[str]` format from model in addition to list-of-dicts. | AI-assisted | `src/vishguard/tacticClassifier.py` |
+| Claude Code (Sonnet) | Iterated prompt v2→v3→v4 based on live Colab T4 eval results. v3: fixed `impersonation` definition (from "grandchild, colleague" to "named person, company, or agency"), added positive `pretexting` definition. v4: added examples 6–9 targeting co-occurrence regressions in `credential_harvesting` and `financial_manipulation`. | AI-assisted | `src/vishguard/promptLibrary.py` |
+| Claude Code (Sonnet) | Organized Colab T3.1–T3.6 outputs into `artifacts/reports/` and `artifacts/plots/`; committed 7 artifact files (2 PNGs, 5 CSVs). | AI-assisted | `artifacts/reports/`, `artifacts/plots/` |
+| Ben (me) | Directed TDD and eval workflow. Ran all T3.1–T3.6 cells on Colab T4, supplied all cell outputs and error traces, reviewed eval numbers, confirmed 117/117 green. Hand-verified all 50 tactic-corpus scripts; directed prompt iteration strategy. | Human-authored | Colab runs + review |
 
 **Tactic corpus disclosure (T3.3):**
 

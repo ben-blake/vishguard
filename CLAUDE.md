@@ -43,7 +43,8 @@ All planning lives in [`docs/`](./docs/) and is the authoritative spec:
 - **Anti-spoof model:** `mo-thecreator/Deepfake-audio-detection` — confirmed working.
   `MelodyMachine/Deepfake-audio-detection-V2` always predicts real (p(synth)≈0.0); do not use.
 - **Tactic LLM:** `Qwen/Qwen2.5-3B-Instruct` in fp16 — 10/10 JSON reliability on T4.
-  Prompt v2 (disambiguation + few-shot) is in `promptLibrary.py`; use it by default.
+  Prompt v4 (9 few-shot examples, co-occurrence fixes) is in `promptLibrary.py`; use it by default.
+  v1–v3 retained for eval comparison only.
 - **ASR:** `openai/whisper-small` via `WhisperProcessor` + `WhisperForConditionalGeneration`
   directly — **not** the pipeline (transformers 5.x pipeline raises `KeyError: num_frames`).
   Always strip punctuation before WER: `re.sub(r'[^\w\s]', '', text)`.
@@ -52,6 +53,7 @@ All planning lives in [`docs/`](./docs/) and is the authoritative spec:
 ## Phase 2 implementation notes (locked)
 
 All modules implemented TDD (68 tests, 100% green as of 2026-04-21).
+Phase 3 eval scripts added 49 more tests (117 total, all green as of 2026-04-23).
 
 **Model caching:** every module uses a module-level dict (`_MODEL_CACHE` or
 `_PIPE_CACHE`) keyed by `modelId`. This avoids reloading models on repeated
