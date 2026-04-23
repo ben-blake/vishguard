@@ -15,7 +15,7 @@ llm:
   device: cuda
   loadIn4Bit: true
   maxNewTokens: 512
-  promptVariant: v2
+  promptVariant: v4
 
 tts:
   modelId: microsoft/speecht5_tts

@@ -54,6 +54,7 @@ All planning lives in [`docs/`](./docs/) and is the authoritative spec:
 
 All modules implemented TDD (68 tests, 100% green as of 2026-04-21).
 Phase 3 eval scripts added 49 more tests (117 total, all green as of 2026-04-23).
+Phase 4 Streamlit UI added 21 more tests (138 total, all green as of 2026-04-23).
 
 **Model caching:** every module uses a module-level dict (`_MODEL_CACHE` or
 `_PIPE_CACHE`) keyed by `modelId`. This avoids reloading models on repeated
