@@ -14,7 +14,7 @@ import streamlit as st
 import torch
 
 from vishguard.orchestrator import runPipeline
-from vishguard.types import AsrConfig, LlmConfig, SpoofConfig, TtsConfig
+from vishguard.types import AsrConfig, LlmConfig, SpoofConfig, TtsConfig, Transcript
 from vishguard.ui.pageReport import renderReport
 
 st.set_page_config(
@@ -22,6 +22,34 @@ st.set_page_config(
     page_icon="🔍",
     layout="wide",
 )
+
+
+@st.cache_resource(show_spinner="Loading models into GPU…")
+def _prewarm(device: str) -> None:
+    """Load all pipeline models into module-level caches on first page load.
+
+    @st.cache_resource runs once per Streamlit server lifetime, so subsequent
+    analysis clicks skip the disk→VRAM loading step entirely.
+    """
+    import numpy as np
+    import soundfile as sf
+    import tempfile
+    from vishguard.loadAudio import ingest
+    from vishguard.asrWhisper import transcribe
+    from vishguard.antiSpoof import detectSpoof
+    from vishguard.tacticClassifier import classifyTactics
+
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        sf.write(f.name, np.zeros(16_000, dtype=np.float32), 16_000)
+        dummy_path = Path(f.name)
+
+    clip = ingest(dummy_path)
+    transcribe(clip, AsrConfig(modelId="openai/whisper-small", device=device))
+    detectSpoof(clip, SpoofConfig(device=device))
+    classifyTactics(
+        Transcript(fullText="hello", durationSec=1.0, modelId="openai/whisper-small"),
+        LlmConfig(device=device, loadIn4Bit=(device == "cuda")),
+    )
 
 
 def _sidebar_config() -> tuple[AsrConfig, SpoofConfig, LlmConfig, TtsConfig, bool]:
@@ -59,6 +87,9 @@ def _sidebar_config() -> tuple[AsrConfig, SpoofConfig, LlmConfig, TtsConfig, boo
 
 
 def main() -> None:
+    if torch.cuda.is_available():
+        _prewarm("cuda")
+
     st.title("VishGuard — Vishing Call Analyzer")
     st.caption(
         "Upload a phone-call recording to detect synthetic/deepfake voice, "
