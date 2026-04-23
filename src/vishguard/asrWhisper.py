@@ -28,22 +28,39 @@ def _load_processor_and_model(cfg: AsrConfig):
 def transcribe(clip: AudioClip, cfg: AsrConfig) -> Transcript:
     processor, model = _load_processor_and_model(cfg)
 
-    inputs = processor(
-        clip.samples,
-        sampling_rate=clip.sampleRate,
-        return_tensors="pt",
-    )
-    input_features = inputs.input_features.to(cfg.device)
+    # WhisperProcessor silently truncates input to 30 s (480 000 samples).
+    # Split longer audio into non-overlapping 30 s chunks and concatenate.
+    chunk_samples = 30 * clip.sampleRate
+    samples = clip.samples
+    texts: list[str] = []
+    segments: list[TranscriptSegment] = []
+    offset = 0
 
-    with torch.no_grad():
-        predicted_ids = model.generate(input_features)
+    while offset < len(samples):
+        chunk = samples[offset : offset + chunk_samples]
+        inputs = processor(chunk, sampling_rate=clip.sampleRate, return_tensors="pt")
+        input_features = inputs.input_features.to(cfg.device)
 
-    text = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
+        with torch.no_grad():
+            predicted_ids = model.generate(input_features)
 
-    segment = TranscriptSegment(startSec=0.0, endSec=clip.durationSec, text=text)
+        chunk_text = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
+        start_sec = offset / clip.sampleRate
+        end_sec = min((offset + chunk_samples) / clip.sampleRate, clip.durationSec)
+
+        if chunk_text:
+            texts.append(chunk_text)
+            segments.append(TranscriptSegment(startSec=start_sec, endSec=end_sec, text=chunk_text))
+
+        offset += chunk_samples
+
+    full_text = " ".join(texts)
+    if not segments:
+        segments = [TranscriptSegment(startSec=0.0, endSec=clip.durationSec, text="")]
+
     return Transcript(
-        fullText=text,
-        segments=(segment,),
+        fullText=full_text,
+        segments=tuple(segments),
         languageCode="en",
         modelId=cfg.modelId,
     )
