@@ -14,7 +14,7 @@ import streamlit as st
 import torch
 
 from vishguard.orchestrator import runPipeline
-from vishguard.types import AsrConfig, LlmConfig, SpoofConfig, TtsConfig, Transcript
+from vishguard.types import AsrConfig, LlmConfig, SpoofConfig, TtsConfig, Transcript, TranscriptSegment
 from vishguard.ui.pageReport import renderReport
 
 st.set_page_config(
@@ -47,7 +47,12 @@ def _prewarm(device: str) -> None:
     transcribe(clip, AsrConfig(modelId="openai/whisper-small", device=device))
     detectSpoof(clip, SpoofConfig(device=device))
     classifyTactics(
-        Transcript(fullText="hello", durationSec=1.0, modelId="openai/whisper-small"),
+        Transcript(
+            fullText="hello",
+            segments=(TranscriptSegment(startSec=0.0, endSec=1.0, text="hello"),),
+            languageCode="en",
+            modelId="openai/whisper-small",
+        ),
         LlmConfig(device=device, loadIn4Bit=(device == "cuda")),
     )
 
