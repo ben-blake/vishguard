@@ -1,5 +1,7 @@
 # VishGuard
 
+**Demo video:** [vimeo.com/1187092533](https://vimeo.com/1187092533)
+
 Vishing-risk audio pipeline for CS 5542 Quiz Challenge 2 (UMKC, Spring 2026).
 Analyzes a phone-call recording and returns a structured risk report:
 transcript, synthetic-voice likelihood, social-engineering tactic labels,
@@ -190,7 +192,7 @@ A sample `report.json` from the architecture doc:
 
 ## Project structure
 
-```
+```text
 vishguard/
 ├── app.py                        # Streamlit UI entry point
 ├── requirements.txt              # CPU dependencies
