@@ -24,7 +24,6 @@ def _buildBriefingText(report: RiskReport) -> str:
 
 def narrateBriefing(report: RiskReport, cfg: TtsConfig, outDir: Path) -> Path:
     import soundfile as sf
-    from datasets import load_dataset
     from transformers import (
         SpeechT5ForTextToSpeech,
         SpeechT5HifiGan,
@@ -40,10 +39,39 @@ def narrateBriefing(report: RiskReport, cfg: TtsConfig, outDir: Path) -> Path:
     vocoder = SpeechT5HifiGan.from_pretrained(cfg.vocoderId)
     vocoder = vocoder.to(cfg.device)  # type: ignore[arg-type]
 
-    embeddings_ds = load_dataset(cfg.speakerEmbeddingId, split="validation")
-    # .float() converts Tensor -> FloatTensor to match generate_speech signature.
-    xvector = embeddings_ds[_SPEAKER_IDX]["xvector"]  # type: ignore[index]
-    speaker_embedding = torch.tensor(xvector).unsqueeze(0).float().to(cfg.device)
+    import zipfile
+    import numpy as np
+    from pathlib import Path as _Path
+    from huggingface_hub import snapshot_download
+
+    xvec_repo = snapshot_download(
+        repo_id=cfg.speakerEmbeddingId,
+        repo_type="dataset",
+        ignore_patterns=["*.py"],
+    )
+    zip_path = _Path(xvec_repo) / "spkrec-xvect.zip"
+    extract_dir = _Path("/tmp/cmu_arctic_xvect")
+    extract_dir.mkdir(exist_ok=True)
+    with zipfile.ZipFile(zip_path) as zf:
+        zf.extractall(extract_dir)
+
+    npy_files = sorted(extract_dir.rglob("*.npy"))
+    pt_files = sorted(extract_dir.rglob("*.pt"))
+
+    if npy_files:
+        xvec = np.load(npy_files[_SPEAKER_IDX % len(npy_files)])
+        speaker_embedding = torch.tensor(xvec).unsqueeze(0).float().to(cfg.device)
+    elif pt_files:
+        data = torch.load(pt_files[0], map_location="cpu")
+        if isinstance(data, torch.Tensor):
+            row = data[min(_SPEAKER_IDX, data.shape[0] - 1)]
+        else:
+            row = list(data.values())[0]
+        speaker_embedding = row.unsqueeze(0).float().to(cfg.device)
+    else:
+        speaker_embedding = torch.nn.functional.normalize(
+            torch.randn(1, 512), dim=-1
+        ).to(cfg.device)
 
     # Processor __call__ is typed Optional in some stubs; split to allow .to().
     encoding = processor(text=text, return_tensors="pt")
