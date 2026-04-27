@@ -165,6 +165,12 @@ Artifact outputs (CSVs and plots) land in [`artifacts/`](./artifacts/).
 
 ---
 
+## Pipeline architecture
+
+![VishGuard pipeline architecture](artifacts/screenshots/architecture.png)
+
+---
+
 ## Sample output
 
 A sample `report.json` from the architecture doc:

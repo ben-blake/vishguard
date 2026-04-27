@@ -249,7 +249,7 @@ reproducible script.
 
 ## Phase 5 — Deliverables (Day 6–7) — CANNOT BE COMPRESSED
 
-### T5.1 `[P5]` PowerPoint deck (10+ slides) — **STATUS: NOT_STARTED**
+### T5.1 `[P5]` PowerPoint deck (10+ slides) — **STATUS: DONE**
 
 Required slides (per Canvas rubric):
 
@@ -269,7 +269,7 @@ Required slides (per Canvas rubric):
 - **Acceptance:** exported to `docs/vishguard_slides.pptx`, reviewed
   against the Canvas rubric checklist.
 
-### T5.2 `[P5]` Demo video (1–2 min) — **STATUS: IN_PROGRESS**
+### T5.2 `[P5]` Demo video (1–2 min) — **STATUS: DONE**
 
 - Script: (0:00) problem intro → (0:15) Streamlit upload → (0:30)
   transcript + spoof + tactics populate → (0:50) risk score + spoken
