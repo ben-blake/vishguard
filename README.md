@@ -54,6 +54,8 @@ streamlit run app.py
 The sidebar lets you toggle TTS briefing generation and select the tactic
 prompt variant (v4 is the default; v1–v3 are retained for A/B comparison).
 
+![VishGuard Streamlit UI](artifacts/screenshots/streamlit.png)
+
 ---
 
 ## CLI
