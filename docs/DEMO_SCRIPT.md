@@ -20,8 +20,7 @@ _Keep Streamlit tab open but in the background._
 
 > "Here is the Streamlit interface. On the left sidebar I have the pipeline
 > settings — ASR model, device, prompt variant, and an optional spoken briefing.
-> I'm using whisper-tiny, CUDA, and the v4 tactic prompt, which achieves a
-> macro-F1 of 0.604 across ten social-engineering tactic labels. I'll also
+> I'm using whisper-small, CUDA, and the v4 tactic prompt, which labels ten social-engineering tactics. I'll also
 > enable the spoken briefing — VishGuard can narrate the risk
 > summary as audio, which is the multimodal bonus component."
 
