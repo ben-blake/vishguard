@@ -56,6 +56,18 @@ All modules implemented TDD (68 tests, 100% green as of 2026-04-21).
 Phase 3 eval scripts added 49 more tests (117 total, all green as of 2026-04-23).
 Phase 4 Streamlit UI added 21 more tests (138 total, all green as of 2026-04-23).
 
+## Phase 5 notes (in progress as of 2026-04-27)
+
+Demo notebook `notebooks/05_colabDemo.ipynb` complete and tested on Colab T4.
+Demo audio `artifacts/audio/demo_call.wav` regenerated with short declarative
+sentences; confirmed p_synth ≥ 0.5 on anti-spoof model.
+
+Key fixes landed in Phase 5:
+
+- `asrWhisper.transcribe` chunks 30 s to avoid Whisper silent truncation.
+- `app.py` pre-warms all models via `@st.cache_resource` on CUDA Colab.
+- `cli.py` `--prompt` extended to v1–v4 (was v1–v2).
+
 **Model caching:** every module uses a module-level dict (`_MODEL_CACHE` or
 `_PIPE_CACHE`) keyed by `modelId`. This avoids reloading models on repeated
 calls within a session. Do not refactor to instance state — the cache must

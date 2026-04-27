@@ -108,20 +108,22 @@ Notes:
 
 ---
 
-## Phase 5 — Deliverables
+## Phase 5 — Deliverables (2026-04-27)
 
-| Tool                           | How used | Origin | Where |
-|--------------------------------|----------|--------|-------|
-| *TBD - fill at end of session* |          |        |       |
+| Tool | How used | Origin | Where |
+| --- | --- | --- | --- |
+| Claude Code (Sonnet) | Authored `notebooks/05_colabDemo.ipynb` — Colab T4 demo notebook: Cell 1 (repo setup), Cell 1b (SpeechT5 WAV generation + anti-spoof sanity check), Cell 2 (ngrok auth), Cell 2b (CLI pre-warm), Cell 3 (Streamlit launch), Cell 3b (GPU/log monitor), Cell 4 (shutdown). | AI-generated | `notebooks/05_colabDemo.ipynb` |
+| Claude Code (Sonnet) | Debugged 5 Colab errors in demo notebook: `repo_type='dataset'` missing from `snapshot_download` (RepositoryNotFoundError); ZIP contains `.npy` not `.arrow` (IndexError); CLI positional arg order wrong (invalid choice); `--prompt` choices only v1/v2 (extended to v4); Whisper truncating at 30 s (chunking fix in `asrWhisper.py`). | AI-assisted | `notebooks/05_colabDemo.ipynb`, `src/vishguard/asrWhisper.py`, `src/vishguard/cli.py` |
+| Claude Code (Sonnet) | Diagnosed p_synth=0.00 on demo audio (long multi-clause segments fool the model); rewrote Cell 1b with 6 short declarative sentences matching Phase 1 spike style (0.988–1.000 scores); added inline anti-spoof PASS/FAIL check before download. | AI-assisted | `notebooks/05_colabDemo.ipynb` |
+| Claude Code (Sonnet) | Added `@st.cache_resource` pre-warm to `app.py` — loads all model weights into GPU on first page load so first analysis click takes ~30–60 s instead of 5+ min on Colab T4. | AI-generated | `app.py` |
+| Claude Code (Sonnet) | Created `scripts/makeDemoAudio.py` — standalone local script to regenerate demo WAV outside of notebook context. | AI-generated | `scripts/makeDemoAudio.py` |
+| Ben (me) | Ran Cell 1b on Colab T4; verified new short-segment WAV scores p(synthetic) ≥ 0.5 on anti-spoof model; committed resulting `artifacts/audio/demo_call.wav`. Narrated and recorded demo video via QuickTime screen capture. | Human-authored | Colab runs + video recording |
 
-Expected entries this phase:
+Notes:
 
-- Slide deck: Gamma / Canva / Google Slides — note any AI-generated
-  slide copy or imagery.
-- Demo video: QuickTime / OBS recording; note any AI-generated narration
-  (if any). Original voice preferred for authenticity on a vishing-safety
-  project.
-- Final README polish may use Claude Code — disclose.
+- Demo audio (SpeechT5, 6 short declarative sentences) confirmed flagged as synthetic on Colab T4 after second generation pass.
+- Streamlit pre-warm (`@st.cache_resource`) populates the Streamlit server's in-memory model cache; CLI pre-warm only warms the HF disk cache — both are needed for sub-60 s analysis on Colab.
+- Slide deck and final README polish: note tool used at end of session.
 
 ---
 

@@ -269,7 +269,7 @@ Required slides (per Canvas rubric):
 - **Acceptance:** exported to `docs/vishguard_slides.pptx`, reviewed
   against the Canvas rubric checklist.
 
-### T5.2 `[P5]` Demo video (1–2 min) — **STATUS: NOT_STARTED**
+### T5.2 `[P5]` Demo video (1–2 min) — **STATUS: IN_PROGRESS**
 
 - Script: (0:00) problem intro → (0:15) Streamlit upload → (0:30)
   transcript + spoof + tactics populate → (0:50) risk score + spoken
