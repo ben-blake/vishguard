@@ -278,13 +278,13 @@ Required slides (per Canvas rubric):
   (unlisted) or Google Drive. Link in README + deck.
 - **Acceptance:** video under 2:00, audible narration, shows end-to-end.
 
-### T5.3 `[P5]` Final AI-tools pass — **STATUS: NOT_STARTED**
+### T5.3 `[P5]` Final AI-tools pass — **STATUS: DONE**
 
 - Fill every remaining phase section in `AI_TOOLS.md` from commit
   history and session notes (not from memory).
 - **Acceptance:** no blank "Tools used" entries.
 
-### T5.4 `[P5]` Git tag + Canvas submission — **STATUS: NOT_STARTED**
+### T5.4 `[P5]` Git tag + Canvas submission — **STATUS: DONE**
 
 - Tag `v1.0.0`, push, ensure GitHub repo is public.
 - Upload deck to Canvas, paste GitHub + demo URLs in submission notes.

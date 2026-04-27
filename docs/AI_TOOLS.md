@@ -117,13 +117,17 @@ Notes:
 | Claude Code (Sonnet) | Diagnosed p_synth=0.00 on demo audio (long multi-clause segments fool the model); rewrote Cell 1b with 6 short declarative sentences matching Phase 1 spike style (0.988–1.000 scores); added inline anti-spoof PASS/FAIL check before download. | AI-assisted | `notebooks/05_colabDemo.ipynb` |
 | Claude Code (Sonnet) | Added `@st.cache_resource` pre-warm to `app.py` — loads all model weights into GPU on first page load so first analysis click takes ~30–60 s instead of 5+ min on Colab T4. | AI-generated | `app.py` |
 | Claude Code (Sonnet) | Created `scripts/makeDemoAudio.py` — standalone local script to regenerate demo WAV outside of notebook context. | AI-generated | `scripts/makeDemoAudio.py` |
-| Ben (me) | Ran Cell 1b on Colab T4; verified new short-segment WAV scores p(synthetic) ≥ 0.5 on anti-spoof model; committed resulting `artifacts/audio/demo_call.wav`. Narrated and recorded demo video via QuickTime screen capture. | Human-authored | Colab runs + video recording |
+| Claude Code (Sonnet) | Fixed `app.py` `_prewarm` function: `Transcript` constructor called with nonexistent `durationSec` field and missing `segments`/`languageCode` fields. Added `TranscriptSegment` import and rebuilt dummy Transcript with all four required fields. | AI-assisted | `app.py` (commit 86b3ef3) |
+| Claude Code (Sonnet) | Fixed `briefingTts.narrateBriefing`: replaced deprecated `load_dataset(cfg.speakerEmbeddingId)` (dataset scripts no longer supported) with `snapshot_download(repo_type="dataset")` + ZIP extraction pattern; added `.npy`/`.pt` fallback chain. | AI-assisted | `src/vishguard/briefingTts.py` (commit 984ca4c) |
+| Claude Code (Sonnet) | Added demo video link (vimeo.com/1187092533) to README; added `artifacts/screenshots/streamlit.png` and `artifacts/screenshots/architecture.png` inline; fixed fenced code block language tag. | AI-assisted | `README.md` (commits 149caf6, 6349f01, 10fd50e) |
+| Claude Code (Sonnet) | Generated `docs/vishguard_slides.pptx` (12 slides) via `scripts/makeSlides.py` (python-pptx): title, problem, business value, datasets, model card, pipeline architecture, prompt engineering, results, eval analysis, demo links, limitations, AI-tools disclosure. | AI-generated | `docs/vishguard_slides.pptx`, `scripts/makeSlides.py` |
+| Ben (me) | Ran Cell 1b on Colab T4; verified new short-segment WAV scores p(synthetic) ≥ 0.5 on anti-spoof model; committed resulting `artifacts/audio/demo_call.wav`. Narrated and recorded demo video via QuickTime screen capture. Reviewed and approved all Phase 5 fixes and slide content. | Human-authored | Colab runs + video recording + review |
 
 Notes:
 
 - Demo audio (SpeechT5, 6 short declarative sentences) confirmed flagged as synthetic on Colab T4 after second generation pass.
 - Streamlit pre-warm (`@st.cache_resource`) populates the Streamlit server's in-memory model cache; CLI pre-warm only warms the HF disk cache — both are needed for sub-60 s analysis on Colab.
-- Slide deck and final README polish: note tool used at end of session.
+- `briefingTts.py` dataset fix mirrors the same `snapshot_download` pattern used in `eval/buildSpoofSet.py` and the Colab notebook — consistent across all speaker-embedding loading paths.
 
 ---
 
