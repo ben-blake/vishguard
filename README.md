@@ -74,6 +74,16 @@ vishguard run call.wav --out out/ --prompt v4
 
 ---
 
+## Bonus — multimodal output
+
+VishGuard implements the **speech → text → analysis → voice narration** bonus
+pipeline: a phone call is transcribed (speech → text), analyzed for tactics
+and risk (text → structured report), then a spoken risk briefing is synthesized
+via SpeechT5 (text → speech). Enable it in the sidebar TTS toggle or with the
+`--tts` CLI flag. The output WAV plays directly in the Streamlit UI.
+
+---
+
 ## Model card
 
 | Stage | Model | Size | License | Notes |
@@ -85,6 +95,42 @@ vishguard run call.wav --out out/ --prompt v4
 | TTS speaker | `Matthijs/cmu-arctic-xvectors` | — | CC-BY | Speaker embedding for SpeechT5 |
 
 Full model selection rationale: [`docs/ARCHITECTURE.md §2`](./docs/ARCHITECTURE.md).
+
+---
+
+## Key libraries
+
+| Library | Role |
+| --- | --- |
+| `transformers` | Whisper ASR, anti-spoof pipeline, Qwen LLM, SpeechT5 TTS |
+| `librosa` | Audio decoding, resampling, format normalization |
+| `torch` | Model inference backend |
+| `pydantic` v2 | Report schema validation and JSON round-trip |
+| `streamlit` | Web UI |
+| `jiwer` | WER computation for ASR evaluation |
+| `scikit-learn` | Confusion matrix, EER (ROC curve) for anti-spoof eval |
+| `soundfile` | WAV read/write |
+| `huggingface_hub` | `snapshot_download` for speaker embeddings |
+
+Full pinned versions: [`requirements.txt`](./requirements.txt) (CPU) and [`requirements-gpu.txt`](./requirements-gpu.txt) (Colab GPU).
+
+---
+
+## Prompt engineering
+
+The tactic classifier uses a structured JSON prompt sent to `Qwen/Qwen2.5-3B-Instruct`.
+Four variants were iterated during Phase 3 evaluation:
+
+| Variant | Change | Macro-F1 |
+| --- | --- | --- |
+| v1 | Bare label list | 0.024 |
+| v2 | Added per-label definitions + 3 few-shot examples | 0.454 |
+| v3 | Fixed `impersonation` definition (added "government agency"); added 2 examples | 0.515 |
+| v4 | 9 total examples; added co-occurrence negatives (gift cards → `financial_manipulation` not `pretexting`) | **0.604** |
+
+The key insight: the 3B model collapses multi-label co-occurrences onto a single dominant
+label without explicit negative examples showing the boundary. v4 is the deployed default.
+Prompt source: [`src/vishguard/promptLibrary.py`](./src/vishguard/promptLibrary.py).
 
 ---
 
